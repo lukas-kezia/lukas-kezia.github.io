@@ -1644,10 +1644,12 @@
             </div>
           </div>
 
-          <p
-            style="text-align: center; color: #888; font-size: 0.8em; margin-top: 15px; font-style: italic; line-height: 1.4;">
-            Ketuk foto untuk memperbesar • Ketuk bingkai untuk mengganti foto
-          </p>
+          <div style="text-align: center; margin-top: 20px;">
+            <span
+              style="display: inline-flex; align-items: center; gap: 6px; background: rgba(143, 49, 21, 0.06); border: 1px dashed rgba(143, 49, 21, 0.25); padding: 6px 14px; border-radius: 50px; font-size: 0.78em; color: #8f3115; font-weight: 500; box-shadow: 0 2px 6px rgba(0,0,0,0.02); font-family: 'Lato', sans-serif;">
+              <span>Ketuk foto untuk memperbesar<br>Ketuk bingkai untuk mengganti foto</span>
+            </span>
+          </div>
         </section>
 
         <!-- Gift Section -->
@@ -2173,7 +2175,6 @@
         closeQris();
       }
     }
-    // Viewport height dikunci via CSS 100dvh + env(safe-area-inset-bottom)
 
     // ===== AUTO CYCLE POLAROID GALLERY =====
     let polaroidInterval = setInterval(cyclePolaroid, 4000);
@@ -2222,8 +2223,7 @@
       }, { passive: false });
     })();
 
-    // ===== GUEST WISHES (MOCKAPI) =====
-    const wishesApiUrl = "https://6a5b55e564f700df5bd6ca1a.mockapi.io/ucapan";
+    const wishesApiUrl = atob("aHR0cHM6Ly82YTViNTVlNTY0ZjcwMGRmNWJkNmNhMWEubW9ja2FwaS5pby91Y2FwYW4=");
 
     function loadWishes() {
       const listContainer = document.getElementById("wishes-list");
