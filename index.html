@@ -1,0 +1,2319 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#3b5d3b">
+  <title>Undangan Pernikahan - Lukas & Kezia</title>
+  <link rel="icon" href="favicon.webp">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;700&family=Lato:wght@300;400&display=swap"
+    rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: 'Beth Ellen';
+      src: url('BethEllen_Custom.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: #a8bf9e;
+      color: #2f3e2f;
+      overflow-x: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /* Memusatkan kontainer secara vertikal */
+      height: 100%;
+      padding: 0;
+      overflow: hidden;
+      touch-action: pan-y;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* Watercolor background hanya di desktop */
+    @media (min-width: 768px) {
+      body {
+        background-color: #b5c9ae;
+        background-image:
+          /* Blotch besar kiri atas — hijau tua */
+          radial-gradient(ellipse 55% 40% at 8% 12%, rgba(80, 115, 80, 0.38) 0%, transparent 70%),
+          /* Blotch sedang kanan atas — sage terang */
+          radial-gradient(ellipse 38% 30% at 88% 6%, rgba(180, 210, 165, 0.45) 0%, transparent 65%),
+          /* Blotch besar kanan tengah — hijau medium */
+          radial-gradient(ellipse 48% 55% at 96% 50%, rgba(100, 145, 95, 0.32) 0%, transparent 68%),
+          /* Blotch kiri bawah — toska pucat */
+          radial-gradient(ellipse 50% 38% at 4% 82%, rgba(140, 185, 150, 0.4) 0%, transparent 65%),
+          /* Blotch bawah tengah — krem kehijau */
+          radial-gradient(ellipse 60% 28% at 52% 98%, rgba(170, 200, 155, 0.35) 0%, transparent 60%),
+          /* Blotch tengah — sangat transparan, softener */
+          radial-gradient(ellipse 70% 60% at 50% 45%, rgba(195, 220, 185, 0.18) 0%, transparent 75%),
+          /* Noise tekstur — titik-titik halus */
+          radial-gradient(ellipse 18% 18% at 22% 35%, rgba(90, 130, 85, 0.18) 0%, transparent 55%),
+          radial-gradient(ellipse 14% 22% at 75% 68%, rgba(70, 110, 70, 0.15) 0%, transparent 55%),
+          radial-gradient(ellipse 22% 14% at 60% 22%, rgba(155, 195, 140, 0.22) 0%, transparent 55%),
+          radial-gradient(ellipse 16% 20% at 35% 78%, rgba(110, 155, 100, 0.2) 0%, transparent 55%);
+      }
+    }
+
+    /* Popup Overlay */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999999;
+      backdrop-filter: blur(5px);
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    .popup {
+      background: white;
+      padding: 50px 40px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: popupFadeIn 0.6s ease;
+      position: relative;
+    }
+
+    @keyframes popupFadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .popup::before {
+      font-size: 3em;
+      display: block;
+      margin-bottom: 20px;
+    }
+
+    .popup h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8em;
+      color: #3b5d3b;
+      margin-bottom: 15px;
+    }
+
+    .popup p {
+      color: #666;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .popup button {
+      padding: 15px 40px;
+      background: linear-gradient(135deg, #4a7c59 0%, #3b5d3b 100%);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1.1em;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(59, 93, 59, 0.3);
+    }
+
+    .popup button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 93, 59, 0.4);
+    }
+
+    /* Main Container */
+    .container {
+      width: 100%;
+      max-width: 430px;
+      background-color: #d2e0d0;
+      /* Latar sage fallback */
+      background-image: url('undangan/sage.webp');
+      background-size: 110% 110%;
+      background-position: center;
+      animation: bgZoomPan 20s ease-in-out infinite alternate;
+      height: 100vh;
+      height: 100svh;
+      height: 100dvh;
+      max-height: 820px;
+      /* Batasi tinggi maksimum sesuai aspek rasio 9:16 yang lebih tinggi */
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      position: relative;
+      box-sizing: border-box;
+      border-radius: 24px;
+      /* Sudut membulat bergaya floating card */
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+      /* Bayangan kontainer */
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
+      /* Memotong isi agar mengikuti rounded corner di iOS */
+      overflow: hidden;
+      /* Mencegah elemen berayun bocor keluar dari border-radius */
+    }
+
+    .scroll-container {
+      width: 100%;
+      height: 100%;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      scroll-padding: 0;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      box-sizing: border-box;
+    }
+
+    @media(min-width:768px) {
+      .container {
+        border-radius: 28px;
+        /* Terkunci persis seperti tampilan HP */
+        width: 430px;
+        min-width: 430px;
+      }
+
+      /* Semua section & header ikut terkunci lebar 430px */
+      section,
+      .header,
+      .footer {
+        width: 430px;
+      }
+    }
+
+    /* Gaya untuk layar handphone (Mobile Viewport) - Penuh Seukuran Layar */
+    @media (max-width: 767px) {
+      body {
+        background-color: #3b5d3b;
+        /* Samakan latar body dengan warna tema agar menyatu dengan toolbar peramban */
+        background-image: none;
+        /* Matikan gambar dekoratif desktop agar rendering lancar */
+        height: 100% !important;
+        align-items: stretch;
+        /* Regangkan ke seluruh layar, hilangkan centering vertikal body */
+      }
+
+      .container,
+      .invite-wrapper {
+        max-height: none;
+        height: 100% !important;
+        /* Paksa agar kartu memenuhi 100% tinggi body */
+      }
+
+      .container {
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .header {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
+    }
+
+    .container.visible {
+      opacity: 1;
+    }
+
+    /* Header Section */
+    .header {
+      background: linear-gradient(135deg, rgba(75, 123, 89, 0.9) 0%, rgba(59, 93, 59, 0.9) 100%);
+      color: white;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 300px;
+      align-items: center;
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+      flex-shrink: 0;
+    }
+
+    /* KODE BARU: MEMAKSA GAMBAR FULL KE SAMPING & MEMENUHI BACKGROUND */
+    .header-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* Memaksa gambar menutup seluruh area tanpa merusak rasio foto */
+      object-position: center;
+      /* Memastikan bagian tengah foto tetap fokus */
+      z-index: 0;
+      /* Menaruh gambar di paling belakang konten teks */
+      pointer-events: none;
+      /* Agar gambar tidak bisa di-klik/drag tak sengaja */
+    }
+
+    /* Memastikan teks "THE WEDDING OF" dkk berada di depan gambar */
+    .header p,
+    .header h1,
+    .header {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Siku header sudah ditangani di media query mobile utama */
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      animation: headerGlow 15s linear infinite;
+    }
+
+    @keyframes headerGlow {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .header h1 {
+      font-family: 'Beth Ellen', cursive;
+      font-size: 2.5em;
+      position: relative;
+      z-index: 1;
+      animation: fadeInDown 1s ease;
+
+      /* --- TAMBAHKAN / SESUAIKAN BARIS INI --- */
+      margin-top: -20px;
+      /* Memperkecil jarak atas dengan teks "THE WEDDING OF" */
+    }
+
+    .header p {
+      font-size: 1.2em;
+      position: relative;
+      z-index: 1;
+      animation: fadeInUp 1s ease 0.3s backwards;
+
+    }
+
+    /* Section */
+    section {
+      padding: 0 20px 60px 20px;
+      background: transparent;
+      margin: 0;
+      border-radius: 0;
+      box-shadow: none;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+      flex-shrink: 0;
+      overflow: hidden;
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    section>* {
+      width: 100%;
+    }
+
+    /* Section alternating backgrounds */
+    section:nth-child(even) {
+      background: transparent;
+    }
+
+    section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8em;
+      color: #3b5d3b;
+      text-align: center;
+      margin-bottom: 18px;
+      position: relative;
+      display: inline-block;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    section h2::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 35px;
+      height: 1.5px;
+      background: #a25132;
+    }
+
+    /* Couple Section */
+    .couple-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .couple-card {
+      text-align: center;
+      flex: 1;
+      min-width: 250px;
+      max-width: 350px;
+      animation: fadeInUp 1s ease;
+    }
+
+    .couple-card img {
+      display: block;
+    }
+
+    .couple-card:hover img.couple-photo {
+      transform: scale(1.05);
+    }
+
+    .photo-flower {
+      border-radius: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      margin-bottom: 0 !important;
+    }
+
+    .couple-nickname {
+      font-family: 'Beth Ellen', cursive;
+      font-size: 2.2em;
+      color: #a25132;
+    }
+
+    .couple-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8em;
+      color: #3b5d3b;
+      margin-bottom: 10px;
+    }
+
+    .couple-parents {
+      color: #666;
+      line-height: 1.6;
+      font-size: 0.95em;
+    }
+
+    .divider {
+      font-family: 'Great Vibes', cursive;
+      font-size: 3em;
+      color: #3b5d3b;
+      margin: 0 10px;
+    }
+
+
+    /* ===== COUPLE PHOTO FLOWERS ===== */
+    .photo-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 180px;
+      height: 180px;
+      margin-bottom: 16px;
+    }
+
+    .photo-wrapper img.couple-photo {
+      width: 180px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 6px solid #3b5d3b;
+      box-shadow: 0 10px 30px rgba(59, 93, 59, 0.3);
+      transition: transform 0.3s ease;
+      margin-bottom: 0;
+      display: block;
+    }
+
+    .couple-card:hover .photo-wrapper img.couple-photo {
+      transform: scale(1.05);
+    }
+
+    .photo-flower {
+      position: absolute;
+      width: 70px;
+      pointer-events: none;
+      bottom: -14px;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+    }
+
+    .photo-flower.fl-left {
+      left: -22px;
+      transform-origin: bottom right;
+      animation: flowerSwayLeft 4s ease-in-out infinite;
+    }
+
+    .photo-flower.fl-right {
+      right: -22px;
+      transform-origin: bottom left;
+      animation: flowerSwayRight 4.4s ease-in-out infinite;
+    }
+
+    @keyframes flowerSwayLeft {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      25% {
+        transform: rotate(2.5deg);
+      }
+
+      50% {
+        transform: rotate(0deg);
+      }
+
+      75% {
+        transform: rotate(-2deg);
+      }
+
+      100% {
+        transform: rotate(0deg);
+      }
+    }
+
+    @keyframes flowerSwayRight {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      25% {
+        transform: rotate(-2.5deg);
+      }
+
+      50% {
+        transform: rotate(0deg);
+      }
+
+      75% {
+        transform: rotate(2deg);
+      }
+
+      100% {
+        transform: rotate(0deg);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .photo-wrapper {
+        width: 150px;
+        height: 150px;
+      }
+
+      .photo-wrapper img.couple-photo {
+        width: 150px;
+        height: 150px;
+      }
+
+      .photo-flower {
+        width: 55px;
+        bottom: -12px;
+      }
+
+      .photo-flower.fl-left {
+        left: -18px;
+      }
+
+      .photo-flower.fl-right {
+        right: -18px;
+      }
+    }
+
+    /* Event Details */
+    .event-details {
+      background: linear-gradient(135deg, #f5f9f5 0%, #e8f5e9 100%);
+      border-radius: 15px;
+      padding: 25px 30px;
+      margin: 15px auto;
+      max-width: 600px;
+      text-align: center;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      width: 100%;
+    }
+
+    .event-details h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2em;
+      color: #3b5d3b;
+      margin-bottom: 20px;
+    }
+
+    .event-info {
+      font-size: 1.2em;
+      color: #555;
+      margin: 15px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .event-info::before {
+      content: '';
+      font-size: 1.3em;
+    }
+
+    /* Countdown */
+    .countdown-container {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .countdown-box {
+      background: linear-gradient(135deg, #4a7c59 0%, #3b5d3b 100%);
+      color: white;
+      width: 75px;
+      height: 100px;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 8px 25px rgba(59, 93, 59, 0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .countdown-number {
+      font-size: 2em;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    .countdown-label {
+      font-size: 0.9em;
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ===== POLAROID STACK GALLERY ===== */
+    .polaroid-stack {
+      position: relative;
+      width: 230px;
+      height: 290px;
+      margin: 15px auto 5px;
+      cursor: pointer;
+    }
+
+    .polaroid-card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      padding: 10px 10px 30px 10px;
+      box-sizing: border-box;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      border-radius: 4px;
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), z-index 0.6s, opacity 0.6s;
+      backface-visibility: hidden;
+    }
+
+    .polaroid-img-wrapper {
+      width: 100%;
+      height: 210px;
+      overflow: hidden;
+      background: #eee;
+      border: 1px solid #ddd;
+    }
+
+    .polaroid-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      cursor: zoom-in;
+    }
+
+    .polaroid-caption {
+      font-family: 'Beth Ellen', cursive;
+      font-size: 0.9em;
+      color: #a25132;
+      text-align: center;
+      margin-top: 12px;
+      user-select: none;
+    }
+
+    .modal-content .gift-card {
+      padding: 12px 15px;
+      margin: 0 0 10px 0;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(59, 93, 59, 0.08);
+    }
+
+    /* Gift Section */
+    .gift-card {
+      background: linear-gradient(135deg, #fff 0%, #f9fdf9 100%);
+      border-radius: 15px;
+      padding: 25px;
+      /* Dikurangi sedikit agar lebih ringkas */
+      margin: 20px auto;
+      max-width: 400px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      border: 2px solid #3b5d3b;
+    }
+
+    /* Bungkus utama untuk membagi kiri dan kanan */
+    .card-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      /* Jarak antara kolom kiri dan kanan */
+      margin-bottom: 15px;
+      /* Jarak ke tombol salin */
+    }
+
+    /* Sisi Kiri: Logo Bank */
+    .bank-logo h4 {
+      font-family: 'Playfair Display', serif;
+      color: #3b5d3b;
+      font-size: 1.4em;
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    /* Sisi Kanan: Teks Informasi */
+    .account-info {
+      text-align: right;
+      /* Menyejajarkan teks ke kanan agar rapi */
+      flex-grow: 1;
+    }
+
+    .account-info .owner-name {
+      color: #333;
+      font-size: 1.1em;
+      font-weight: 600;
+      margin: 0 0 4px 0;
+      /* Margin bawah tipis untuk memisah dengan nomor */
+    }
+
+    .account-info .account-number {
+      color: #3b5d3b;
+      font-size: 1.1em;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    /* Tombol Salin (Full Width agar seimbang) */
+    .copy-button {
+      width: 100%;
+      padding: 10px 0;
+      background: #3b5d3b;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 0.95em;
+      transition: all 0.3s ease;
+    }
+
+    .copy-button:hover {
+      background: #2f4a2f;
+      transform: translateY(-2px);
+    }
+
+    /* Styling Latar Belakang Popup (Overlay) */
+    .modal-overlay {
+      display: none;
+      /* Tersembunyi secara default */
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      /* Efek gelap transparan */
+      backdrop-filter: blur(4px);
+      /* Efek blur halus di latar belakang */
+      z-index: 9999;
+      /* Memastikan popup berada di paling depan */
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    /* Kotak Putih Isi Popup */
+    .modal-content {
+      background: #fff;
+      padding: 25px;
+      border-radius: 15px;
+      max-width: 320px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      animation: popupSkala 0.3s ease-out;
+      /* Animasi muncul mumbul halus */
+    }
+
+    @keyframes popupSkala {
+      0% {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .modal-content h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #3b5d3b;
+      font-family: 'Playfair Display', serif;
+    }
+
+    /* Frame Gambar QRIS */
+    .qris-container {
+      background: #f9fdf9;
+      padding: 10px;
+      border: 1px solid #e0eee0;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .qris-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 5px;
+    }
+
+    /* Tata Letak Tombol Unduh & Tutup */
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-download,
+    .btn-close {
+      flex: 1;
+      padding: 10px 0;
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+      box-sizing: border-box;
+    }
+
+    /* Tombol Unduh (Warna Hijau Tema) */
+    .btn-download {
+      background: #3b5d3b;
+      color: white;
+    }
+
+    .btn-download:hover {
+      background: #2f4a2f;
+    }
+
+    /* Tombol Tutup (Warna Abu-Abu Netral) */
+    .btn-close {
+      background: #f0f0f0;
+      color: #555;
+    }
+
+    .btn-close:hover {
+      background: #e0e0e0;
+    }
+
+    /* Footer */
+    .footer {
+      background: #3b5d3b;
+      color: white;
+      padding: 40px 20px;
+      padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+      text-align: center;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      flex-shrink: 0;
+    }
+
+    .footer p {
+      font-family: 'Great Vibes', cursive;
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes bgZoomPan {
+      0% {
+        background-size: 110% 110%;
+        background-position: 10% 10%;
+      }
+
+      25% {
+        background-size: 135% 135%;
+        background-position: 80% 20%;
+      }
+
+      50% {
+        background-size: 120% 120%;
+        background-position: 20% 80%;
+      }
+
+      75% {
+        background-size: 135% 135%;
+        background-position: 90% 90%;
+      }
+
+      100% {
+        background-size: 110% 110%;
+        background-position: 10% 10%;
+      }
+    }
+
+
+
+    /* ===== SCROLL REVEAL ===== */
+    .reveal {
+      opacity: 0;
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.from-bottom {
+      transform: translateY(50px);
+    }
+
+    .reveal.from-left {
+      transform: translateX(-50px);
+    }
+
+    .reveal.from-right {
+      transform: translateX(50px);
+    }
+
+    .reveal.from-scale {
+      transform: scale(0.85);
+    }
+
+    .reveal.from-bottom.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal.from-left.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .reveal.from-right.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .reveal.from-scale.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Section tidak boleh di-hide — scroll snap butuh langsung visible */
+    section.reveal,
+    section.reveal.from-bottom,
+    section.reveal.from-scale {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    /* ===== INVITE WRAPPER & FLOATING FLOWERS ===== */
+
+    .invite-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 430px;
+      height: 100vh;
+      height: 100svh;
+      height: 100dvh;
+      max-height: 820px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .floating-flower-layer {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* TOP FLOWER */
+    .top-flower-fixed {
+      position: absolute;
+      top: -15px;
+      /* Dinaikkan agar tidak terlihat celah kosong saat bergerak turun */
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(430px, 100vw);
+      animation: floatTop 6s ease-in-out infinite;
+      z-index: 10;
+    }
+
+    @keyframes floatTop {
+      0% {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      50% {
+        transform: translateX(-50%) translateY(6px);
+        /* Goyang naik-turun halus ke dalam laman */
+      }
+
+      100% {
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    /* SIDE FLOWERS */
+    .left-flower-fixed,
+    .right-flower-fixed {
+      position: absolute;
+      bottom: -15px;
+      width: 160px;
+      transform-origin: bottom center;
+      animation: sway 5s ease-in-out infinite;
+    }
+
+    /* Karena container sudah fix max 430px, kita bisa menyederhanakan posisinya */
+    .left-flower-fixed {
+      left: -50px;
+      /* Langsung ditarik keluar ke kiri dari batas container */
+    }
+
+    .right-flower-fixed {
+      right: -50px;
+      /* Langsung ditarik keluar ke kanan dari batas container */
+      animation-name: swayRight;
+      /* Khusus bunga kanan */
+    }
+
+    /* GOYANG HALUS */
+    @keyframes sway {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      25% {
+        transform: rotate(2deg);
+      }
+
+      50% {
+        transform: rotate(0deg);
+      }
+
+      75% {
+        transform: rotate(-2deg);
+      }
+
+      100% {
+        transform: rotate(0deg);
+      }
+    }
+
+    @keyframes swayRight {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      25% {
+        transform: rotate(-2deg);
+      }
+
+      50% {
+        transform: rotate(0deg);
+      }
+
+      75% {
+        transform: rotate(2deg);
+      }
+
+      100% {
+        transform: rotate(0deg);
+      }
+    }
+
+    /* MOBILE */
+    @media(max-width: 768px) {
+      .left-flower-fixed {
+        left: -40px;
+        width: 130px;
+      }
+
+      .right-flower-fixed {
+        right: -40px;
+        width: 130px;
+      }
+    }
+
+    /* ===== SNOW EFFECT ===== */
+    #snow-canvas {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+      border-radius: 28px;
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
+    }
+
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2.5em;
+      }
+
+      section h2 {
+        font-size: 2em;
+      }
+
+      .couple-container {
+        gap: 20px;
+      }
+
+      .couple-name {
+        font-size: 1.6em;
+      }
+
+      .countdown-box {
+        width: 70px;
+        height: 90px;
+      }
+
+      .countdown-number {
+        font-size: 1.8em;
+      }
+
+      .polaroid-stack {
+        width: 210px;
+        height: 265px;
+      }
+
+      .polaroid-img-wrapper {
+        height: 190px;
+      }
+    }
+
+    .section-icon {
+      width: auto;
+      /* mengikuti ukuran font judul */
+      height: 5em;
+      display: block;
+      margin: 0 auto 10px auto;
+      object-fit: contain;
+    }
+
+    /* ===== PHOTO LIGHTBOX ===== */
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.92);
+      z-index: 99999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .lightbox-overlay.open {
+      display: flex;
+    }
+
+    .lightbox-overlay img {
+      max-width: 100%;
+      max-height: 75vh;
+      border-radius: 12px;
+      object-fit: contain;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+      animation: lbFadeIn 0.25s ease;
+    }
+
+    @keyframes lbFadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .lightbox-close {
+      margin-top: 24px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
+      font-size: 1.6em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease;
+      line-height: 1;
+    }
+
+    .lightbox-close:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .gallery img {
+      cursor: zoom-in;
+    }
+
+    /* ===== LOVE STORY ===== */
+    .love-story-timeline {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      margin-top: 16px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      max-height: 380px;
+      padding: 0 10px 10px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(59, 93, 59, 0.3) transparent;
+    }
+
+    .love-story-timeline::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .love-story-timeline::-webkit-scrollbar-thumb {
+      background-color: rgba(59, 93, 59, 0.3);
+      border-radius: 4px;
+    }
+
+    /* Chrome/Safari */
+    .ls-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+    }
+
+    /* Pill tahun */
+    .ls-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #2f3e2f;
+      border-radius: 999px;
+      padding: 6px 22px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1em;
+      font-weight: 700;
+      color: #2f3e2f;
+      background: transparent;
+      min-width: 90px;
+    }
+
+    /* Teks di bawah pill */
+    .ls-desc {
+      font-size: 0.88em;
+      color: #555;
+      line-height: 1.55;
+      margin-top: 6px;
+      max-width: 280px;
+    }
+
+    /* Spasi antar item tanpa garis */
+    .ls-item {
+      margin-bottom: 14px;
+    }
+
+    /* ===== PAGE INDICATOR DOTS ===== */
+    .page-dots {
+      position: fixed;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+    }
+
+    .page-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(59, 93, 59, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1.5px solid rgba(59, 93, 59, 0.5);
+    }
+
+    .page-dot.active {
+      background: #3b5d3b;
+      transform: scale(1.35);
+    }
+
+    /* Scroll hint arrow */
+    .scroll-hint {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.85);
+      animation: bounceDown 2s infinite ease-in-out;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .scroll-hint:hover {
+      color: rgba(255, 255, 255, 1);
+    }
+
+    @keyframes bounceDown {
+
+      0%,
+      100% {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      50% {
+        transform: translateX(-50%) translateY(8px);
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+  <!-- Lightbox -->
+  <div class="lightbox-overlay" id="lightbox" onclick="closeLightboxOutside(event)">
+    <img class="lightbox-img" id="lightbox-img"
+      src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Foto">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  </div>
+
+  <!-- Popup -->
+  <div class="overlay" id="overlay">
+    <div class="popup">
+	  <h1>💐</h1>
+      <h2>Kepada Yth.<br><span id="popup-nama"></span></h2>
+      <button onclick="bukaUndangan()">Buka Undangan 💌</button>
+      <p style="font-size: 0.85em; color: #888; margin-top: 18px; font-style: italic; line-height: 1.4;">
+        Tanpa mengurangi rasa hormat, mohon untuk tidak menyebarkan ulang undangan ini.
+      </p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="invite-wrapper">
+    <div class="container" id="mainContainer">
+      <!-- FIXED FLOWERS -->
+      <div class="floating-flower-layer">
+        <img class="top-flower-fixed" src="undangan/top_flower.webp" alt="">
+        <img class="left-flower-fixed" src="undangan/element_left.png" alt="">
+        <img class="right-flower-fixed" src="undangan/element_right.png" alt="">
+      </div>
+
+      <div class="scroll-container" id="mainScrollContainer">
+        <!-- SNOW CANVAS -->
+        <!--<canvas id="snow-canvas"></canvas>-->
+        <!-- Header -->
+        <div class="header">
+          <img src="undangan/header.png" alt="Header" class="header-bg">
+          <p>THE WEDDING OF</p>
+          <h1>Lukas & Kezia</h1>
+          <div class="scroll-hint" onclick="document.querySelector('section').scrollIntoView({ behavior: 'smooth' })">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Bible Verse Section -->
+        <section>
+          <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+            <img src="undangan/icon_1.png" alt="Icon" class="section-icon">
+            <p style="font-style: italic; font-size: 1.3em; color: #3b5d3b; line-height: 1.8; margin-bottom: 20px;">
+              TUHAN Allah berfirman: ”Tidak baik, kalau manusia itu seorang diri saja. Aku akan menjadikan penolong
+              baginya,
+              yang sepadan dengan dia.”
+            </p>
+            <p style="color: #666; font-size: 1.1em; font-weight: bold;">
+              Kejadian 2:18 TB
+            </p>
+          </div>
+        </section>
+
+        <!-- Welcome Section -->
+        <section>
+          <img src="undangan/icon_2.png" alt="Icon" class="section-icon">
+          <h2>Syukur kepada Tuhan</h2>
+          <p
+            style="text-align: center; font-size: 1.15em; color: #555; line-height: 1.8; max-width: 700px; margin: 0 auto;">
+            Dengan penuh sukacita, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberi doa restu di hari
+            pernikahan
+            kami.
+          </p>
+        </section>
+
+        <!-- Couple Section -->
+        <section>
+          <h2>Mempelai Pria</h2>
+          <div class="couple-container">
+            <div class="couple-card">
+              <div class="photo-wrapper">
+                <img class="couple-photo" src="undangan/Lukas.jpg" alt="Foto Lukas">
+                <img class="photo-flower fl-left" src="undangan/left_flower.webp" alt="">
+                <img class="photo-flower fl-right" src="undangan/right_flower.webp" alt="">
+              </div>
+              <div class="couple-nickname">Lukas</div>
+              <div class="couple-name">Lukas Ardianto</div>
+              <div class="couple-parents">
+                Putra dari
+                <br> Bapak Yehezkiel Yulianto
+                <br> dan
+                <br> Ibu Elisabeth Suwarti (†)
+              </div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <h2>Mempelai Wanita</h2>
+          <div class="couple-container">
+            <div class="couple-card">
+              <div class="photo-wrapper">
+                <img class="couple-photo" src="undangan/Kezia.jpg" alt="Foto Kezia">
+                <img class="photo-flower fl-left" src="undangan/left_flower.webp" alt="">
+                <img class="photo-flower fl-right" src="undangan/right_flower.webp" alt="">
+              </div>
+              <div class="couple-nickname">Kezia</div>
+              <div class="couple-name">Kezia Yunita Santoso</div>
+              <div class="couple-parents">
+                Putri dari
+                <br> Bapak Toni Aris Santoso
+                <br> dan
+                <br> Ibu Anita Setiawati
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Event Section -->
+        <section>
+
+          <img src="undangan/icon_4.png" alt="Icon" class="section-icon">
+          <h2>Pemberkatan Pernikahan</h2>
+          <div class="couple-container">
+            <div class="event-info" style="flex-direction: column; gap: 5px;">
+              <div>📅 Sabtu, 20 November 2027</div>
+              <div>📍 Gereja GPdI COTW Temanggung</div>
+            </div>
+          </div>
+        </section>
+        <section>
+
+          <img src="undangan/icon_5.png" alt="Icon" class="section-icon">
+          <h2>Resepsi</h2>
+          <div class="couple-container">
+            <div class="event-info" style="flex-direction: column; gap: 5px;">
+              <div>📅 Sabtu, 20 November 2027</div>
+              <div>🕑 Pukul 11.00 - Selesai</div>
+              <div>📍 Gedung Juang Temanggung</div>
+              <div style="font-style: italic; color: #666;">Jl. </div>
+              <a href="https://maps.google.com/?q=Gedung+Juang+Temanggung" target="_blank" class="copy-button"
+                style="text-decoration:none; display:inline-block; margin-top:16px; width:auto; padding:10px 28px; text-align:center;">
+                🗺️ Buka Maps
+              </a>
+            </div>
+            <div class="countdown-container" id="countdown">
+              <div class="countdown-box">
+                <div class="countdown-number" id="days">00</div>
+                <div class="countdown-label">Hari</div>
+              </div>
+              <div class="countdown-box">
+                <div class="countdown-number" id="hours">00</div>
+                <div class="countdown-label">Jam</div>
+              </div>
+              <div class="countdown-box">
+                <div class="countdown-number" id="minutes">00</div>
+                <div class="countdown-label">Menit</div>
+              </div>
+              <div class="countdown-box">
+                <div class="countdown-number" id="seconds">00</div>
+                <div class="countdown-label">Detik</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+
+        <!-- Love Story Section -->
+        <section>
+          <img src="undangan/icon_3.png" alt="Icon" class="section-icon" onerror="this.style.display='none'">
+          <h2>Love Story</h2>
+          <div class="love-story-timeline">
+            <div class="ls-item">
+              <div class="ls-pill">September 2022</div>
+              <div class="ls-desc">Pertemuan pertama di pelayanan multimedia GPdI COTW Temanggung — Lukas jatuh cinta
+                pada
+                pandangan pertama.</div>
+            </div>
+            <div class="ls-item">
+              <div class="ls-pill">Desember 2023</div>
+              <div class="ls-desc">Mulai akrab sebagai sahabat.</div>
+            </div>
+            <div class="ls-item">
+              <div class="ls-pill">Juli 2025</div>
+              <div class="ls-desc">Perjalanan ke Yogyakarta, benih perasaan Kezia mulai tumbuh.</div>
+            </div>
+
+            <div class="ls-item">
+              <div class="ls-pill">Mei 2026</div>
+              <div class="ls-desc">Kami resmi berpacaran, merajut kisah cinta yang penuh harapan.</div>
+            </div>
+
+            <div class="ls-item">
+              <div class="ls-pill">Mei 2027</div>
+              <div class="ls-desc">Kami bertunangan, mengikat janji menuju masa depan bersama.</div>
+            </div>
+            <div class="ls-item">
+              <div class="ls-pill">November 2027 💍</div>
+              <div class="ls-desc">Hari Pernikahan — Kami melangkah bersama menuju babak baru yang penuh berkat.</div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Gallery -->
+        <section>
+          <img src="undangan/icon_6.png" alt="Icon" class="section-icon">
+          <h2>Galeri Foto</h2>
+          <!-- Polaroid Stack Deck -->
+          <div class="polaroid-stack" onclick="cyclePolaroid()">
+            <!-- Card 1 -->
+            <div class="polaroid-card" style="transform: rotate(-3deg); z-index: 6;">
+              <div class="polaroid-img-wrapper">
+                <img src="undangan/1.jpeg" alt="Foto 1"
+                  onclick="event.stopPropagation(); openLightbox('undangan/1.jpeg')">
+              </div>
+              <div class="polaroid-caption">Lukas & Kezia</div>
+            </div>
+            <!-- Card 2 -->
+            <div class="polaroid-card" style="transform: rotate(2deg); z-index: 5;">
+              <div class="polaroid-img-wrapper">
+                <img src="undangan/2.jpeg" alt="Foto 2"
+                  onclick="event.stopPropagation(); openLightbox('undangan/2.jpeg')">
+              </div>
+              <div class="polaroid-caption">Moments of Love</div>
+            </div>
+            <!-- Card 3 -->
+            <div class="polaroid-card" style="transform: rotate(-1deg); z-index: 4;">
+              <div class="polaroid-img-wrapper">
+                <img src="undangan/3.jpg" alt="Foto 3"
+                  onclick="event.stopPropagation(); openLightbox('undangan/3.jpg')">
+              </div>
+              <div class="polaroid-caption">Together Forever</div>
+            </div>
+            <!-- Card 4 -->
+            <div class="polaroid-card" style="transform: rotate(3deg); z-index: 3;">
+              <div class="polaroid-img-wrapper">
+                <img src="undangan/4.jpg" alt="Foto 4"
+                  onclick="event.stopPropagation(); openLightbox('undangan/4.jpg')">
+              </div>
+              <div class="polaroid-caption">Happy Hearts</div>
+            </div>
+            <!-- Card 5 -->
+            <div class="polaroid-card" style="transform: rotate(-2deg); z-index: 2;">
+              <div class="polaroid-img-wrapper">
+                <img src="undangan/5.jpg" alt="Foto 5"
+                  onclick="event.stopPropagation(); openLightbox('undangan/5.jpg')">
+              </div>
+              <div class="polaroid-caption">Side by Side</div>
+            </div>
+            <!-- Card 6 -->
+            <div class="polaroid-card" style="transform: rotate(1deg); z-index: 1;">
+              <div class="polaroid-img-wrapper">
+                <img src="undangan/6.jpg" alt="Foto 6"
+                  onclick="event.stopPropagation(); openLightbox('undangan/6.jpg')">
+              </div>
+              <div class="polaroid-caption">Our Journey</div>
+            </div>
+          </div>
+
+          <p
+            style="text-align: center; color: #888; font-size: 0.8em; margin-top: 15px; font-style: italic; line-height: 1.4;">
+            Ketuk foto untuk memperbesar • Ketuk bingkai untuk mengganti foto
+          </p>
+        </section>
+
+        <!-- Gift Section -->
+        <section>
+          <img src="undangan/icon_7.png" alt="Icon" class="section-icon">
+          <h2>Kado Pernikahan</h2>
+          <p style="text-align: center; color: #666; margin-bottom: 20px; line-height: 1.6; font-size: 0.95em;">
+            Doa restu Anda adalah hadiah terindah bagi kami. Namun, apabila memberi merupakan ungkapan kasih, dengan
+            penuh
+            syukur dapat disampaikan melalui:
+          </p>
+          <div style="text-align: center;">
+            <button class="copy-button" onclick="bukaKado()" id="btn-kado"
+              style="font-size: 1.05em; padding: 13px 35px; width: auto;">
+              🎁 Klik di Sini
+            </button>
+          </div>
+        </section>
+
+        <!-- Ucapan & Doa Section -->
+        <section>
+          <img src="undangan/icon_6.png" alt="Icon" class="section-icon" style="height: 4em; margin-bottom: 5px;">
+          <h2>Ucapan & Doa Restu</h2>
+
+          <!-- Form Input -->
+          <form id="wishes-form" onsubmit="handleSendWish(event)"
+            style="width: 100%; max-width: 360px; margin: 0 auto 12px; display: flex; flex-direction: column; gap: 8px;">
+            <input type="text" id="wish-name" placeholder="Nama Anda" required
+              style="width: 100%; padding: 8px 12px; border: 1px solid #3b5d3b; border-radius: 8px; font-family: inherit; font-size: 0.9em; outline: none; background: rgba(255,255,255,0.95);">
+            <textarea id="wish-message" placeholder="Tulis ucapan & doa restu..." required rows="2"
+              style="width: 100%; padding: 8px 12px; border: 1px solid #3b5d3b; border-radius: 8px; font-family: inherit; font-size: 0.9em; outline: none; resize: none; background: rgba(255,255,255,0.95);"></textarea>
+            <button type="submit" class="copy-button" style="width: 100%; padding: 8px 0; font-size: 0.9em;">
+              ✍️ Kirim Ucapan
+            </button>
+          </form>
+
+
+          <!-- List Wishes -->
+          <div id="wishes-list"
+            style="width: 100%; max-width: 360px; margin: 0 auto; overflow-y: auto; max-height: 180px; padding: 0 4px; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; border-radius: 8px; scrollbar-width: thin; overscroll-behavior-y: contain;">
+            <p style="text-align: center; color: #666; font-size: 0.9em; font-style: italic;">Memuat ucapan...</p>
+          </div>
+        </section>
+
+        <!-- Ucapan Terima Kasih -->
+        <section>
+          <img src="undangan/icon_7.png" alt="Icon" class="section-icon">
+          <h2>Terima Kasih</h2>
+          <div style="text-align:center">
+            <p style="color:#555; line-height:1.9; font-size:0.97em;">
+              Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan
+              memberikan
+              doa restu di hari pernikahan kami.
+            </p>
+            <p style="margin-top: 18px; color:#3b5d3b; font-style:italic; font-size:0.95em; line-height:1.7;">
+              Atas segala doa dan restunya,<br>kami ucapkan terima kasih yang sebesar-besarnya.
+            </p>
+            <div style="margin-top:28px; font-family:'Great Vibes',cursive; font-size:2em; color:#3b5d3b;">
+              Lukas &amp; Kezia
+            </div>
+          </div>
+        </section>
+
+        <div class="footer">
+          <div style="font-size:1.8em; margin-bottom:12px;">💍</div>
+          <div style="font-family:'Beth Ellen',cursive; font-size:2em; letter-spacing:1px; margin-bottom:8px;">
+            Lukas &amp; Kezia
+          </div>
+          <div style="width:50px; height:1px; background:rgba(255,255,255,0.4); margin:12px auto;"></div>
+          <div style="font-size:0.95em; opacity:0.85; letter-spacing:2px; text-transform:uppercase;">
+            00 · 000 · 2027
+          </div>
+          <div style="margin-top:20px; font-size:0.82em; opacity:0.6; font-style:italic; line-height:1.7;">
+            "Apa yang telah dipersatukan Allah,<br>tidak boleh diceraikan manusia."
+          </div>
+        </div>
+      </div> <!-- .scroll-container -->
+    </div> <!-- .container -->
+  </div> <!-- .invite-wrapper -->
+
+  <div id="qrisModal" class="modal-overlay" onclick="closeQrisOuter(event)">
+    <div class="modal-content">
+      <!-- Wadah Gambar QRIS -->
+      <div class="qris-container">
+        <img src="undangan/QRIS.jpg" alt="QRIS Undangan" id="qrisImage">
+      </div>
+
+      <!-- Tombol Aksi di Dalam Popup -->
+      <div class="modal-actions">
+        <a href="undangan/QRIS.jpg" download="QRIS_Undangan.jpg" class="btn-download">Unduh QRIS</a>
+        <button class="btn-close" onclick="closeQris()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Kado Pernikahan -->
+  <div id="kadoModal" class="modal-overlay" onclick="closeKadoOuter(event)">
+    <div class="modal-content" style="max-width: 350px; padding: 22px 18px; border-radius: 18px;">
+      <h3
+        style="font-family: 'Playfair Display', serif; color: #3b5d3b; text-align: center; margin-bottom: 15px; font-size: 1.3em;">
+        🎁 Kado Pernikahan</h3>
+
+      <div class="gift-card" style="margin: 0 auto 12px; width: 100%; box-sizing: border-box; text-align: left;">
+        <div class="card-content">
+          <div class="bank-logo">
+            <h4 style="margin: 0; color: #3b5d3b;">🏦 BCA</h4>
+          </div>
+          <div class="account-info" style="margin-top: 5px;">
+            <p class="owner-name" style="font-weight: bold; margin: 0; font-size: 0.95em;">Lukas Ardianto</p>
+            <p class="account-number"
+              style="letter-spacing: 1px; margin: 2px 0 0 0; font-size: 1.05em; font-weight: bold; color: #a25132;">
+              1234567890</p>
+          </div>
+        </div>
+        <button class="copy-button" onclick="copyRekening()"
+          style="padding: 8px 0; font-size: 0.85em; width: 100%; margin-top: 8px;">Salin Nomor Rekening</button>
+      </div>
+
+      <div class="gift-card" style="margin: 0 auto 12px; width: 100%; box-sizing: border-box; text-align: left;">
+        <div class="card-content">
+          <div class="bank-logo">
+            <h4 style="margin: 0; color: #3b5d3b;">🏦 BRI</h4>
+          </div>
+          <div class="account-info" style="margin-top: 5px;">
+            <p class="owner-name" style="font-weight: bold; margin: 0; font-size: 0.95em;">Kezia Yunita Santoso</p>
+            <p class="account-number"
+              style="letter-spacing: 1px; margin: 2px 0 0 0; font-size: 1.05em; font-weight: bold; color: #a25132;">
+              1234567890</p>
+          </div>
+        </div>
+        <button class="copy-button" onclick="copyRekening2()"
+          style="padding: 8px 0; font-size: 0.85em; width: 100%; margin-top: 8px;">Salin Nomor Rekening</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 15px; width: 100%;">
+        <button class="copy-button" style="width: 100%; padding: 10px 0; font-size: 0.9em; background: #3b5d3b;"
+          onclick="openQrisFromKado()">🏦 Tampilkan QRIS</button>
+        <button class="btn-close" onclick="closeKadoModal()"
+          style="width: 100%; padding: 8px 0; background: #888; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9em; margin-top: 0;">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // UTF-8 Safe Base64 Decoder
+    function decodeName(str) {
+      if (!str) return null;
+      try {
+        let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) {
+          base64 += '=';
+        }
+        return decodeURIComponent(atob(base64).split('').map(function (c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+      } catch (e) {
+        return null;
+      }
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const inviteParam = params.get("invite");
+    const nama = decodeName(inviteParam);
+
+    // Validasi parameter nama tamu
+    (function () {
+      const popup = document.querySelector(".overlay .popup");
+      if (!inviteParam || !nama || nama.trim() === "") {
+        if (popup) {
+          popup.innerHTML = `
+            <div style="text-align: center; padding: 10px 0;">
+              <span style="font-size: 3em; display: block; margin-bottom: 12px; filter: grayscale(0.2);">⚠️</span>
+              <h3 style="font-family: 'Playfair Display', serif; color: #a25132; margin-bottom: 12px; font-size: 1.25em;">Tautan Undangan Tidak Valid</h3>
+              <p style="font-size: 0.9em; color: #666; line-height: 1.6; margin-bottom: 0;">
+                Mohon gunakan tautan undangan resmi yang telah dikirimkan secara pribadi kepada Anda. Terima kasih.
+              </p>
+            </div>
+          `;
+        }
+        const mainContainer = document.getElementById("mainContainer");
+        if (mainContainer) mainContainer.remove();
+      } else {
+        const popupNamaEl = document.getElementById("popup-nama");
+        if (popupNamaEl) popupNamaEl.textContent = nama;
+      }
+    })();
+
+    // Open invitation function
+    function bukaUndangan() {
+      document.getElementById("overlay").classList.add("hidden");
+      document.getElementById("mainContainer").classList.add("visible");
+      loadWishes();
+      const rawNama = nama;
+      const hasGuestName = rawNama && rawNama.trim() !== "";
+      const wishesForm = document.getElementById("wishes-form");
+      const wishNameInput = document.getElementById("wish-name");
+
+      if (hasGuestName) {
+        if (wishNameInput) {
+          wishNameInput.value = rawNama;
+          wishNameInput.readOnly = true;
+          wishNameInput.style.backgroundColor = "rgba(235, 240, 235, 0.8)";
+          wishNameInput.style.cursor = "not-allowed";
+        }
+      } else {
+        if (wishesForm) wishesForm.style.display = "none";
+      }
+    }
+
+    // Countdown timer
+    const targetDate = new Date("Nov 20, 2027 11:00:00").getTime();
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance < 0) {
+        document.getElementById("countdown").innerHTML = '<div style="font-size: 1.5em; color: #3b5d3b;">Acara Telah Berlangsung 🎉</div>';
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById("days").textContent = String(days).padStart(2, '0');
+      document.getElementById("hours").textContent = String(hours).padStart(2, '0');
+      document.getElementById("minutes").textContent = String(minutes).padStart(2, '0');
+      document.getElementById("seconds").textContent = String(seconds).padStart(2, '0');
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // Copy account number
+    function copyRekening() {
+      const rekening = "BCA1234567890";
+      navigator.clipboard.writeText(rekening).then(() => {
+        alert("Nomor rekening berhasil disalin!");
+      }).catch(() => {
+        alert("Gagal menyalin nomor rekening");
+      });
+    }
+
+    function copyRekening2() {
+      const rekening = "BRI1234567890";
+      navigator.clipboard.writeText(rekening).then(() => {
+        alert("Nomor rekening berhasil disalin!");
+      }).catch(() => {
+        alert("Gagal menyalin nomor rekening");
+      });
+    }
+    // Fungsi untuk membuka kado digital (Modal)
+    function bukaKado() {
+      const modal = document.getElementById('kadoModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeKadoModal() {
+      const modal = document.getElementById('kadoModal');
+      if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    }
+
+    function closeKadoOuter(event) {
+      const modal = document.getElementById('kadoModal');
+      if (event.target === modal) {
+        closeKadoModal();
+      }
+    }
+
+    function openQrisFromKado() {
+      closeKadoModal();
+      openQris();
+    }
+
+    // ===== POLAROID STACK CYCLE =====
+    function cyclePolaroid() {
+      const cards = document.querySelectorAll('.polaroid-card');
+      if (cards.length <= 1) return;
+
+      let sortedCards = Array.from(cards).sort((a, b) => {
+        return parseInt(window.getComputedStyle(a).zIndex) - parseInt(window.getComputedStyle(b).zIndex);
+      });
+
+      const activeCard = sortedCards[sortedCards.length - 1];
+
+      activeCard.style.transform = 'translateX(280px) rotate(25deg)';
+      activeCard.style.opacity = '0';
+
+      setTimeout(() => {
+        sortedCards.forEach(card => {
+          let currentZ = parseInt(card.style.zIndex || window.getComputedStyle(card).zIndex);
+          if (card === activeCard) {
+            card.style.zIndex = '1';
+          } else {
+            card.style.zIndex = (currentZ + 1).toString();
+          }
+        });
+
+        const randomRot = (Math.random() * 6 - 3).toFixed(1);
+        activeCard.style.transform = `translateX(0) rotate(${randomRot}deg)`;
+        activeCard.style.opacity = '1';
+      }, 350);
+    }
+
+    // Touch gesture swipe support for polaroid stack
+    (function () {
+      let startX = 0;
+      const stack = document.querySelector('.polaroid-stack');
+      if (!stack) return;
+
+      stack.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+      }, { passive: true });
+
+      stack.addEventListener('touchend', (e) => {
+        let diffX = e.changedTouches[0].clientX - startX;
+        if (Math.abs(diffX) > 50) {
+          cyclePolaroid();
+        }
+      }, { passive: true });
+    })();
+
+
+
+    // ===== LIGHTBOX =====
+    function openLightbox(src) {
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox').classList.add('open');
+      document.getElementById('mainScrollContainer').style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('open');
+      document.getElementById('lightbox-img').src = '';
+      document.getElementById('mainScrollContainer').style.overflow = '';
+    }
+    function closeLightboxOutside(e) {
+      if (e.target === document.getElementById('lightbox')) closeLightbox();
+    }
+
+    // ===== SCROLL REVEAL =====
+    (function () {
+      function initReveal() {
+        // Tag semua elemen yang ingin di-reveal
+        const targets = [
+          { sel: '.couple-card', cls: 'from-bottom' },
+          { sel: '.divider', cls: 'from-scale' },
+          { sel: '.event-details', cls: 'from-bottom' },
+          { sel: '.countdown-box', cls: 'from-scale' },
+          { sel: '.gallery img', cls: 'from-bottom' },
+          { sel: '.gift-card', cls: 'from-bottom' },
+          // header h1/p skipped — handled by CSS animation
+          // section h2 skipped — uses transform for centering (conflict)
+        ];
+
+        targets.forEach(({ sel, cls }) => {
+          document.querySelectorAll(sel).forEach((el, i) => {
+            if (!el.classList.contains('reveal')) {
+              el.classList.add('reveal', cls);
+              el.style.transitionDelay = (i % 4) * 0.08 + 's';
+            }
+          });
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+            } else {
+              // Hapus visible agar bisa muncul lagi saat scroll balik
+              entry.target.classList.remove('visible');
+            }
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+      }
+
+      // Jalankan setelah undangan dibuka
+      const origBuka = window.bukaUndangan;
+      window.bukaUndangan = function () {
+        origBuka && origBuka();
+        setTimeout(initReveal, 600);
+      };
+    })();
+
+    // ===== SNOW EFFECT =====
+    (function () {
+      const canvas = document.getElementById('snow-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      function resize() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const FLAKE_COUNT = 80;
+      const flakes = [];
+
+      function randomBetween(a, b) {
+        return a + Math.random() * (b - a);
+      }
+
+      function createFlake() {
+        return {
+          x: randomBetween(0, canvas.width),
+          y: randomBetween(-canvas.height, 0),
+          r: randomBetween(4, 14),
+          speed: randomBetween(0.25, 1.0),
+          drift: randomBetween(-0.25, 0.25),
+          opacity: randomBetween(0.06, 0.32),
+          wobble: randomBetween(0, Math.PI * 2),
+          wobbleSpeed: randomBetween(0.006, 0.018),
+        };
+      }
+
+      for (let i = 0; i < FLAKE_COUNT; i++) {
+        const f = createFlake();
+        f.y = randomBetween(0, canvas.height); // scatter on load
+        flakes.push(f);
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        flakes.forEach(f => {
+          f.wobble += f.wobbleSpeed;
+          f.x += f.drift + Math.sin(f.wobble) * 0.4;
+          f.y += f.speed;
+
+          if (f.y > canvas.height + 10) {
+            Object.assign(f, createFlake());
+            f.y = -10;
+          }
+          if (f.x < -10) f.x = canvas.width + 10;
+          if (f.x > canvas.width + 10) f.x = -10;
+
+          const grad = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r);
+          grad.addColorStop(0, `rgba(255, 235, 130, ${f.opacity})`);
+          grad.addColorStop(0.4, `rgba(255, 210, 80,  ${f.opacity * 0.55})`);
+          grad.addColorStop(1, `rgba(255, 185, 30,  0)`);
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+          ctx.fillStyle = grad;
+          ctx.shadowColor = 'rgba(255, 220, 80, 0.35)';
+          ctx.shadowBlur = f.r * 2.5;
+          ctx.fill();
+        });
+
+        requestAnimationFrame(draw);
+      }
+
+      draw();
+    })();
+    // ===== PAGE DOTS =====
+    (function () {
+      function initPageDots() {
+        const container = document.getElementById('mainContainer');
+        const dotsNav = document.getElementById('pageDots');
+        if (!dotsNav) return;
+
+        // Kumpulkan semua "halaman": header + sections + footer
+        const pages = Array.from(container.querySelectorAll('.header, section, .footer'));
+
+        // Buat dot untuk tiap halaman
+        pages.forEach((page, i) => {
+          const dot = document.createElement('div');
+          dot.className = 'page-dot' + (i === 0 ? ' active' : '');
+          dot.title = 'Halaman ' + (i + 1);
+          dot.addEventListener('click', () => {
+            page.scrollIntoView({ behavior: 'smooth' });
+          });
+          dotsNav.appendChild(dot);
+        });
+
+        const dots = dotsNav.querySelectorAll('.page-dot');
+
+        const scrollContainer = document.getElementById('mainScrollContainer') || container;
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+              const idx = pages.indexOf(entry.target);
+              dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+            }
+          });
+        }, { root: scrollContainer, threshold: 0.5 });
+
+        pages.forEach(p => observer.observe(p));
+      }
+
+      const origBuka2 = window.bukaUndangan;
+      window.bukaUndangan = function () {
+        origBuka2 && origBuka2();
+        setTimeout(initPageDots, 700);
+      };
+    })();
+    // Fungsi untuk membuka popup QRIS
+    function openQris() {
+      document.getElementById('qrisModal').style.display = 'flex';
+      document.body.style.overflow = 'hidden'; /* Mengunci scroll layar utama */
+    }
+
+    // Fungsi untuk menutup popup via tombol Tutup
+    function closeQris() {
+      document.getElementById('qrisModal').style.display = 'none';
+      document.body.style.overflow = 'auto'; /* Mengaktifkan kembali scroll layar */
+    }
+
+    // Fungsi ekstra: Menutup popup jika tamu mengetuk area luar kotak putih
+    function closeQrisOuter(event) {
+      const modal = document.getElementById('qrisModal');
+      if (event.target === modal) {
+        closeQris();
+      }
+    }
+    // Viewport height dikunci via CSS 100dvh + env(safe-area-inset-bottom)
+
+    // ===== AUTO CYCLE POLAROID GALLERY =====
+    let polaroidInterval = setInterval(cyclePolaroid, 4000);
+
+    // Override cyclePolaroid to reset interval on interaction
+    const origCyclePolaroid = cyclePolaroid;
+    cyclePolaroid = function () {
+      clearInterval(polaroidInterval);
+      polaroidInterval = setInterval(cyclePolaroid, 4000);
+      origCyclePolaroid();
+    };
+
+    // Prevent scroll snap bubbling on guest wishes list
+    (function () {
+      const wishesList = document.getElementById('wishes-list');
+      if (!wishesList) return;
+
+      let startY = 0;
+
+      wishesList.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+      }, { passive: false });
+
+      wishesList.addEventListener('touchmove', (e) => {
+        const currentY = e.touches[0].clientY;
+        const diffY = startY - currentY; // diffY > 0: scrolling down, diffY < 0: scrolling up
+
+        const scrollTop = wishesList.scrollTop;
+        const scrollHeight = wishesList.scrollHeight;
+        const clientHeight = wishesList.clientHeight;
+
+        // Block scroll-chaining at the top boundary
+        if (scrollTop <= 0 && diffY < 0) {
+          if (e.cancelable) e.preventDefault();
+        }
+        // Block scroll-chaining at the bottom boundary
+        else if (scrollTop + clientHeight >= scrollHeight && diffY > 0) {
+          if (e.cancelable) e.preventDefault();
+        }
+
+        e.stopPropagation();
+      }, { passive: false });
+
+      wishesList.addEventListener('touchend', (e) => {
+        e.stopPropagation();
+      }, { passive: false });
+    })();
+
+    // ===== GUEST WISHES (MOCKAPI) =====
+    const wishesApiUrl = "https://6a5b55e564f700df5bd6ca1a.mockapi.io/ucapan";
+
+    function loadWishes() {
+      const listContainer = document.getElementById("wishes-list");
+      if (!listContainer) return;
+
+      fetch(wishesApiUrl)
+        .then(res => res.json())
+        .then(data => {
+          if (!data || data.length === 0) {
+            listContainer.innerHTML = '<p style="text-align: center; color: #888; font-size: 0.9em; font-style: italic; margin-top: 10px;">Belum ada ucapan. Jadilah yang pertama!</p>';
+            return;
+          }
+
+          data.reverse();
+
+          listContainer.innerHTML = "";
+          data.forEach(item => {
+            const card = `
+              <div style="background: rgba(255, 255, 255, 0.85); border-left: 3px solid #a25132; padding: 10px 12px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: left;">
+                <strong style="color: #3b5d3b; font-size: 0.95em; display: block; margin-bottom: 2px;">${escapeHtml(item.nama)}</strong>
+                <span style="color: #555; font-size: 0.88em; line-height: 1.4; display: block;">${escapeHtml(item.pesan)}</span>
+              </div>
+            `;
+            listContainer.innerHTML += card;
+          });
+        })
+        .catch(err => {
+          console.error("Gagal memuat ucapan:", err);
+          listContainer.innerHTML = '<p style="text-align: center; color: #c0392b; font-size: 0.9em; font-style: italic;">Gagal memuat ucapan restu.</p>';
+        });
+    }
+
+    function handleSendWish(event) {
+      event.preventDefault();
+
+      const nameInput = document.getElementById("wish-name");
+      const messageInput = document.getElementById("wish-message");
+      const sendButton = event.target.querySelector("button");
+
+      const name = nameInput.value.trim();
+      const message = messageInput.value.trim();
+
+      if (!name || !message) return;
+
+      nameInput.disabled = true;
+      messageInput.disabled = true;
+      sendButton.disabled = true;
+      sendButton.textContent = "Mengirim...";
+
+      fetch(wishesApiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          nama: name,
+          pesan: message
+        })
+      })
+        .then(res => res.json())
+        .then(() => {
+          messageInput.value = "";
+          nameInput.disabled = false;
+          messageInput.disabled = false;
+          sendButton.disabled = false;
+          sendButton.textContent = "✍️ Kirim Ucapan";
+          loadWishes();
+        })
+        .catch(err => {
+          console.error("Gagal mengirim ucapan:", err);
+          alert("Gagal mengirim ucapan restu. Silakan coba kembali.");
+          nameInput.disabled = false;
+          messageInput.disabled = false;
+          sendButton.disabled = false;
+          sendButton.textContent = "✍️ Kirim Ucapan";
+        });
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+
+</body>
+
+</html>
