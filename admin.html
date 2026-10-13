@@ -226,7 +226,6 @@
             </div>
 
             <div class="spreadsheet-actions">
-              <input type="text" id="sheet-filter" class="input-box" placeholder="🔍 Filter di tabel..." style="width: 170px; height: 36px; font-size: 0.85rem;" oninput="filterSpreadsheetRows()">
               <button class="btn-secondary" onclick="addSpreadsheetRow(1)" title="Tambah 1 baris kosong">
                 <i class="fas fa-plus"></i> +1 Baris
               </button>
@@ -239,6 +238,48 @@
               <button class="btn-primary" id="btn-save-spreadsheet" onclick="saveAllSpreadsheetChanges()">
                 <i class="fas fa-save"></i> Simpan Semua (Ctrl+S)
               </button>
+            </div>
+          </div>
+
+          <!-- Spreadsheet Filter & Sort Bar -->
+          <div class="spreadsheet-filter-bar">
+            <div>
+              <input type="text" id="sheet-filter" class="input-box" placeholder="🔍 Cari nama atau no HP..." oninput="filterSpreadsheetRows()">
+            </div>
+            <div>
+              <select id="sheet-filter-type" class="select-box" onchange="filterSpreadsheetRows()">
+                <option value="all">Semua Kategori</option>
+                <option value="undangan_digital">💌 Undangan Digital</option>
+                <option value="undangan_fisik">📜 Undangan Fisik</option>
+                <option value="pengumuman">📢 Pengumuman Saja</option>
+              </select>
+            </div>
+            <div>
+              <select id="sheet-filter-sender" class="select-box" onchange="filterSpreadsheetRows()">
+                <option value="all">Semua Pihak</option>
+                <option value="Lukas">Lukas</option>
+                <option value="Bapak Lukas">Bapak Lukas</option>
+                <option value="Kezia">Kezia</option>
+                <option value="Papa Kezia">Papa Kezia</option>
+                <option value="Mama Kezia">Mama Kezia</option>
+              </select>
+            </div>
+            <div>
+              <select id="sheet-filter-status" class="select-box" onchange="filterSpreadsheetRows()">
+                <option value="all">Semua Status</option>
+                <option value="pending">Pending</option>
+                <option value="terkirim">Terkirim</option>
+              </select>
+            </div>
+            <div>
+              <select id="sheet-sort" class="select-box" onchange="sortSpreadsheetRows(this.value)">
+                <option value="created_asc">⏱️ Urut: Waktu Input (Lama-Baru)</option>
+                <option value="created_desc">⏱️ Urut: Terbaru Dulu</option>
+                <option value="name_asc">🔤 Urut: Nama (A - Z)</option>
+                <option value="name_desc">🔤 Urut: Nama (Z - A)</option>
+                <option value="sender">👥 Urut: Pihak Pengundang</option>
+                <option value="status_pending">📬 Urut: Pending Dulu</option>
+              </select>
             </div>
           </div>
 
@@ -321,6 +362,16 @@
                   <option value="all">Semua Status</option>
                   <option value="pending">Pending</option>
                   <option value="terkirim">Terkirim</option>
+                </select>
+              </div>
+              <div>
+                <select id="filter-sort" class="select-box" onchange="renderTable()">
+                  <option value="created_asc">⏱️ Urut: Waktu Input (Lama-Baru)</option>
+                  <option value="created_desc">⏱️ Urut: Terbaru Dulu</option>
+                  <option value="name_asc">🔤 Urut: Nama (A - Z)</option>
+                  <option value="name_desc">🔤 Urut: Nama (Z - A)</option>
+                  <option value="sender">👥 Urut: Pihak Pengundang</option>
+                  <option value="status_pending">📬 Urut: Pending Dulu</option>
                 </select>
               </div>
             </div>

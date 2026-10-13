@@ -594,7 +594,7 @@ body {
 
 .filter-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.3fr;
   gap: 12px;
 }
 
@@ -788,6 +788,23 @@ tr:hover td {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.spreadsheet-filter-bar {
+  padding: 10px 20px;
+  background: #f4f8f3;
+  border-bottom: 1px solid rgba(59, 93, 59, 0.14);
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1.3fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.spreadsheet-filter-bar .input-box,
+.spreadsheet-filter-bar .select-box {
+  padding: 7px 10px;
+  font-size: 0.83rem;
+  background: white;
 }
 
 .spreadsheet-wrapper {

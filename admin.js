@@ -230,8 +230,9 @@ function renderTable() {
   const filterSender = document.getElementById("filter-sender").value;
   const filterRelation = document.getElementById("filter-relation").value;
   const filterStatus = document.getElementById("filter-status").value;
+  const filterSort = document.getElementById("filter-sort")?.value || "created_asc";
 
-  const filtered = guests.filter(g => {
+  let filtered = guests.filter(g => {
     const matchSearch = (g.name || "").toLowerCase().includes(search) || (g.phone || "").includes(search);
     const matchType = filterType === "all" ||
       (filterType === "undangan_digital" && (g.type === "undangan_digital" || g.type === "undangan")) ||
@@ -243,6 +244,19 @@ function renderTable() {
     const matchStatus = filterStatus === "all" || g.status === filterStatus;
     return matchSearch && matchType && matchSender && matchRelation && matchStatus;
   });
+
+  // Sorting
+  if (filterSort === "name_asc") {
+    filtered.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  } else if (filterSort === "name_desc") {
+    filtered.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+  } else if (filterSort === "created_desc") {
+    filtered.sort((a, b) => (new Date(b.created_at || 0)) - (new Date(a.created_at || 0)));
+  } else if (filterSort === "sender") {
+    filtered.sort((a, b) => (a.sender || "").localeCompare(b.sender || ""));
+  } else if (filterSort === "status_pending") {
+    filtered.sort((a, b) => (a.status === "pending" ? -1 : 1));
+  }
 
   if (filtered.length === 0) {
     tbody.innerHTML = `
@@ -931,9 +945,12 @@ function initEventListeners() {
   });
 
   // Filter input listeners
-  ["filter-search", "filter-type", "filter-sender", "filter-relation", "filter-status"].forEach(id => {
+  ["filter-search", "filter-type", "filter-sender", "filter-relation", "filter-status", "filter-sort"].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener("input", renderTable);
+    if (el) {
+      el.addEventListener("input", renderTable);
+      el.addEventListener("change", renderTable);
+    }
   });
 
   // Template editor selector
@@ -1047,29 +1064,54 @@ function renderSpreadsheetTable() {
   if (!tbody) return;
 
   const filterText = (document.getElementById("sheet-filter")?.value || "").toLowerCase().trim();
+  const filterType = document.getElementById("sheet-filter-type")?.value || "all";
+  const filterSender = document.getElementById("sheet-filter-sender")?.value || "all";
+  const filterStatus = document.getElementById("sheet-filter-status")?.value || "all";
+  const sheetSort = document.getElementById("sheet-sort")?.value || "created_asc";
 
-  if (spreadsheetData.length === 0) {
+  let filtered = spreadsheetData.filter(row => {
+    const matchSearch = !filterText || (
+      (row.name || "").toLowerCase().includes(filterText) ||
+      (row.phone || "").includes(filterText) ||
+      (row.relation || "").toLowerCase().includes(filterText) ||
+      (row.sender || "").toLowerCase().includes(filterText)
+    );
+    const matchType = filterType === "all" ||
+      (filterType === "undangan_digital" && (row.type === "undangan_digital" || row.type === "undangan")) ||
+      (filterType === "undangan_fisik" && row.type === "undangan_fisik") ||
+      (filterType === "pengumuman" && row.type === "pengumuman") ||
+      row.type === filterType;
+    const matchSender = filterSender === "all" || row.sender === filterSender;
+    const matchStatus = filterStatus === "all" || row.status === filterStatus;
+    return matchSearch && matchType && matchSender && matchStatus;
+  });
+
+  // Sorting
+  if (sheetSort === "name_asc") {
+    filtered.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  } else if (sheetSort === "name_desc") {
+    filtered.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+  } else if (sheetSort === "created_desc") {
+    filtered = [...filtered].reverse();
+  } else if (sheetSort === "sender") {
+    filtered.sort((a, b) => (a.sender || "").localeCompare(b.sender || ""));
+  } else if (sheetSort === "status_pending") {
+    filtered.sort((a, b) => (a.status === "pending" ? -1 : 1));
+  }
+
+  if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
         <td colspan="8" style="text-align: center; padding: 40px; color: #888;">
           <i class="fas fa-table" style="font-size: 32px; color: #bbb; margin-bottom: 10px; display: block;"></i>
-          Belum ada baris data. Klik <strong>+1 Baris</strong> atau <strong>Paste dari Excel</strong> untuk memulai.
+          ${spreadsheetData.length === 0 ? 'Belum ada baris data. Klik <strong>+1 Baris</strong> atau <strong>Paste dari Excel</strong> untuk memulai.' : 'Tidak ada data tamu yang cocok dengan filter.'}
         </td>
       </tr>
     `;
     return;
   }
 
-  tbody.innerHTML = spreadsheetData.map((row, idx) => {
-    // Filter pencarian sederhana
-    if (filterText) {
-      const match = row.name.toLowerCase().includes(filterText) ||
-                    row.phone.includes(filterText) ||
-                    row.relation.toLowerCase().includes(filterText) ||
-                    row.sender.toLowerCase().includes(filterText);
-      if (!match) return "";
-    }
-
+  tbody.innerHTML = filtered.map((row, idx) => {
     const isDirty = dirtyRowIds.has(row.id);
     const rowClass = row.isNew ? "is-new" : (isDirty ? "is-dirty" : "");
 
@@ -1117,6 +1159,14 @@ function renderSpreadsheetTable() {
       </tr>
     `;
   }).join("");
+}
+
+function filterSpreadsheetRows() {
+  renderSpreadsheetTable();
+}
+
+function sortSpreadsheetRows(val) {
+  renderSpreadsheetTable();
 }
 
 // Tangani perubahan pada sel input

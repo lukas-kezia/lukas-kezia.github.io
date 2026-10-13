@@ -99,7 +99,8 @@ const GuestsAPI = {
       ];
     }
 
-    return await supabaseRequest("guests?select=*&order=created_at.desc");
+    // Mengambil seluruh tamu berurutan waktu dibuat secara deterministik (stabil saat diedit)
+    return await supabaseRequest("guests?select=*&order=created_at.asc,id.asc");
   },
 
   // Tambah tamu baru
