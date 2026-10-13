@@ -11,6 +11,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;700&family=Lato:wght@300;400&display=swap"
     rel="stylesheet">
+  <script src="supabaseConfig.js"></script>
   <style>
     @font-face {
       font-family: 'Beth Ellen';
@@ -44,6 +45,11 @@
       overflow: hidden;
       touch-action: pan-y;
       -webkit-text-size-adjust: 100%;
+    }
+
+    /* Penanda Sembunyikan Section Khusus Undangan / Pengumuman */
+    .hidden-audience {
+      display: none !important;
     }
 
     /* Watercolor background hanya di desktop */
@@ -1513,7 +1519,7 @@
             </div>
           </div>
         </section>
-        <section>
+        <section id="section-resepsi" class="for-undangan-only">
 
           <img src="undangan/icon_5.webp" alt="Icon" class="section-icon">
           <h2>Resepsi</h2>
@@ -1653,7 +1659,7 @@
         </section>
 
         <!-- Gift Section -->
-        <section>
+        <section id="section-kado" class="for-undangan-only">
           <img src="undangan/icon_7.webp" alt="Icon" class="section-icon">
           <h2>Kado Pernikahan</h2>
           <p style="text-align: center; color: #666; margin-bottom: 20px; line-height: 1.6; font-size: 0.95em;">
@@ -1730,7 +1736,7 @@
     </div> <!-- .container -->
   </div> <!-- .invite-wrapper -->
 
-  <div id="qrisModal" class="modal-overlay" onclick="closeQrisOuter(event)">
+  <div id="qrisModal" class="modal-overlay for-undangan-only" onclick="closeQrisOuter(event)">
     <div class="modal-content">
       <!-- Wadah Gambar QRIS -->
       <div class="qris-container">
@@ -1746,7 +1752,7 @@
   </div>
 
   <!-- Modal Kado Pernikahan -->
-  <div id="kadoModal" class="modal-overlay" onclick="closeKadoOuter(event)">
+  <div id="kadoModal" class="modal-overlay for-undangan-only" onclick="closeKadoOuter(event)">
     <div class="modal-content" style="max-width: 350px; padding: 22px 18px; border-radius: 18px;">
       <h3
         style="font-family: 'Playfair Display', serif; color: #3b5d3b; text-align: center; margin-bottom: 15px; font-size: 1.3em;">
@@ -1794,48 +1800,114 @@
   </div>
 
   <script>
-    // UTF-8 Safe Base64 Decoder
-    function decodeName(str) {
-      if (!str) return null;
+    // Helper to decode Base64 (untuk backward compatibility link lama) atau Plain Text URL-Safe
+    function resolveGuestParam(param) {
+      if (!param) return null;
+      // Normalisasi: decode URI dan ubah '+' menjadi spasi
+      let rawCleaned = decodeURIComponent(param.replace(/\+/g, ' ')).trim();
+
+      // Coba periksa apakah encoded base64
       try {
-        let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+        let base64 = param.replace(/-/g, '+').replace(/_/g, '/');
         while (base64.length % 4) {
           base64 += '=';
         }
-        return decodeURIComponent(atob(base64).split('').map(function (c) {
+        let decoded = decodeURIComponent(atob(base64).split('').map(function (c) {
           return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
-      } catch (e) {
-        return null;
-      }
+
+        if (decoded && decoded.length >= 2 && !/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(decoded)) {
+          return { decoded: decoded.trim(), raw: rawCleaned };
+        }
+      } catch (e) {}
+
+      return { decoded: rawCleaned, raw: rawCleaned };
     }
 
     const params = new URLSearchParams(window.location.search);
     const inviteParam = params.get("invite");
-    const nama = decodeName(inviteParam);
+    let nama = "";
+    let currentGuest = null;
 
-    // Validasi parameter nama tamu
-    (function () {
-      const popup = document.querySelector(".overlay .popup");
-      if (!inviteParam || !nama || nama.trim() === "") {
-        if (popup) {
-          popup.innerHTML = `
-            <div style="text-align: center; padding: 10px 0;">
-              <span style="font-size: 3em; display: block; margin-bottom: 12px; filter: grayscale(0.2);">⚠️</span>
-              <h3 style="font-family: 'Playfair Display', serif; color: #8f3115; margin-bottom: 12px; font-size: 1.25em;">Tautan Undangan Tidak Valid</h3>
-              <p style="font-size: 0.9em; color: #666; line-height: 1.6; margin-bottom: 0;">
-                Mohon gunakan tautan undangan resmi yang telah dikirimkan secara pribadi kepada Anda. Terima kasih.
-              </p>
-            </div>
-          `;
-        }
-        const mainContainer = document.getElementById("mainContainer");
-        if (mainContainer) mainContainer.remove();
+    // Terapkan batasan elemen tampilan berdasarkan kategori tamu (Undangan vs Pengumuman)
+    function applyGuestTypeRestrictions(type) {
+      const isPengumuman = (type === "pengumuman");
+      const undanganElements = document.querySelectorAll(".for-undangan-only");
+      const pengumumanElements = document.querySelectorAll(".for-pengumuman-only");
+
+      if (isPengumuman) {
+        undanganElements.forEach(el => el.classList.add("hidden-audience"));
+        pengumumanElements.forEach(el => el.classList.remove("hidden-audience"));
       } else {
-        const popupNamaEl = document.getElementById("popup-nama");
-        if (popupNamaEl) popupNamaEl.textContent = nama;
+        undanganElements.forEach(el => el.classList.remove("hidden-audience"));
+        pengumumanElements.forEach(el => el.classList.add("hidden-audience"));
       }
-    })();
+    }
+
+    function renderInvalidGuest() {
+      const popup = document.querySelector(".overlay .popup");
+      if (popup) {
+        popup.innerHTML = `
+          <div style="text-align: center; padding: 10px 0;">
+            <span style="font-size: 3em; display: block; margin-bottom: 12px; filter: grayscale(0.2);">⚠️</span>
+            <h3 style="font-family: 'Playfair Display', serif; color: #8f3115; margin-bottom: 12px; font-size: 1.25em;">Tautan Undangan Tidak Valid</h3>
+            <p style="font-size: 0.9em; color: #666; line-height: 1.6; margin-bottom: 0;">
+              Mohon gunakan tautan undangan resmi yang telah dikirimkan secara pribadi kepada Anda. Terima kasih.
+            </p>
+          </div>
+        `;
+      }
+      const mainContainer = document.getElementById("mainContainer");
+      if (mainContainer) mainContainer.remove();
+    }
+
+    // Validasi parameter nama tamu ke Supabase
+    async function validateGuest() {
+      if (!inviteParam || inviteParam.trim() === "") {
+        renderInvalidGuest();
+        return;
+      }
+
+      const parsed = resolveGuestParam(inviteParam);
+      const queryName = parsed ? (parsed.decoded || parsed.raw) : "";
+
+      if (!queryName) {
+        renderInvalidGuest();
+        return;
+      }
+
+      try {
+        let guest = await GuestsAPI.getByName(queryName);
+        if (!guest && parsed.raw && parsed.raw !== queryName) {
+          guest = await GuestsAPI.getByName(parsed.raw);
+        }
+
+        if (!guest) {
+          renderInvalidGuest();
+          return;
+        }
+
+        currentGuest = guest;
+        nama = guest.name;
+        window.currentGuest = guest;
+
+        const popupNamaEl = document.getElementById("popup-nama");
+        if (popupNamaEl) popupNamaEl.textContent = guest.name;
+
+        // Terapkan visibility untuk pengumuman / undangan
+        applyGuestTypeRestrictions(guest.type);
+
+      } catch (err) {
+        console.error("Gagal memvalidasi tamu:", err);
+        // Fallback jika terjadi offline/gangguan jaringan saat sudah ada nama query
+        nama = queryName;
+        const popupNamaEl = document.getElementById("popup-nama");
+        if (popupNamaEl) popupNamaEl.textContent = queryName;
+      }
+    }
+
+    // Jalankan validasi
+    validateGuest();
 
     // Open invitation function
     function bukaUndangan() {
@@ -2114,48 +2186,7 @@
 
       draw();
     })();
-    // ===== PAGE DOTS =====
-    (function () {
-      function initPageDots() {
-        const container = document.getElementById('mainContainer');
-        const dotsNav = document.getElementById('pageDots');
-        if (!dotsNav) return;
-
-        // Kumpulkan semua "halaman": header + sections + footer
-        const pages = Array.from(container.querySelectorAll('.header, section, .footer'));
-
-        // Buat dot untuk tiap halaman
-        pages.forEach((page, i) => {
-          const dot = document.createElement('div');
-          dot.className = 'page-dot' + (i === 0 ? ' active' : '');
-          dot.title = 'Halaman ' + (i + 1);
-          dot.addEventListener('click', () => {
-            page.scrollIntoView({ behavior: 'smooth' });
-          });
-          dotsNav.appendChild(dot);
-        });
-
-        const dots = dotsNav.querySelectorAll('.page-dot');
-
-        const scrollContainer = document.getElementById('mainScrollContainer') || container;
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-              const idx = pages.indexOf(entry.target);
-              dots.forEach((d, i) => d.classList.toggle('active', i === idx));
-            }
-          });
-        }, { root: scrollContainer, threshold: 0.5 });
-
-        pages.forEach(p => observer.observe(p));
-      }
-
-      const origBuka2 = window.bukaUndangan;
-      window.bukaUndangan = function () {
-        origBuka2 && origBuka2();
-        setTimeout(initPageDots, 700);
-      };
-    })();
+    // ===== PAGE DOTS (Dinonaktifkan agar tampilan lebih bersih) =====
     // Fungsi untuk membuka popup QRIS
     function openQris() {
       document.getElementById('qrisModal').style.display = 'flex';
@@ -2223,83 +2254,68 @@
       }, { passive: false });
     })();
 
-    const wishesApiUrl = atob("aHR0cHM6Ly82YTViNTVlNTY0ZjcwMGRmNWJkNmNhMWEubW9ja2FwaS5pby91Y2FwYW4=");
-
-    function loadWishes() {
+    // Memuat ucapan dan doa restu dari Supabase
+    async function loadWishes() {
       const listContainer = document.getElementById("wishes-list");
       if (!listContainer) return;
 
-      fetch(wishesApiUrl)
-        .then(res => res.json())
-        .then(data => {
-          if (!data || data.length === 0) {
-            listContainer.innerHTML = '<p style="text-align: center; color: #888; font-size: 0.9em; font-style: italic; margin-top: 10px;">Belum ada ucapan. Jadilah yang pertama!</p>';
-            return;
-          }
+      try {
+        const data = await WishesAPI.getAll();
+        if (!data || data.length === 0) {
+          listContainer.innerHTML = '<p style="text-align: center; color: #888; font-size: 0.9em; font-style: italic; margin-top: 10px;">Belum ada ucapan. Jadilah yang pertama!</p>';
+          return;
+        }
 
-          data.reverse();
-
-          listContainer.innerHTML = "";
-          data.forEach(item => {
-            const card = `
-              <div style="background: rgba(255, 255, 255, 0.85); border-left: 3px solid #8f3115; padding: 10px 12px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: left;">
-                <strong style="color: #3b5d3b; font-size: 0.95em; display: block; margin-bottom: 2px;">${escapeHtml(item.nama)}</strong>
-                <span style="color: #555; font-size: 0.88em; line-height: 1.4; display: block;">${escapeHtml(item.pesan)}</span>
-              </div>
-            `;
-            listContainer.innerHTML += card;
-          });
-        })
-        .catch(err => {
-          console.error("Gagal memuat ucapan:", err);
-          listContainer.innerHTML = '<p style="text-align: center; color: #c0392b; font-size: 0.9em; font-style: italic;">Gagal memuat ucapan restu.</p>';
+        listContainer.innerHTML = "";
+        data.forEach(item => {
+          const card = `
+            <div style="background: rgba(255, 255, 255, 0.85); border-left: 3px solid #8f3115; padding: 10px 12px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: left;">
+              <strong style="color: #3b5d3b; font-size: 0.95em; display: block; margin-bottom: 2px;">${escapeHtml(item.name || item.nama)}</strong>
+              <span style="color: #555; font-size: 0.88em; line-height: 1.4; display: block;">${escapeHtml(item.message || item.pesan)}</span>
+            </div>
+          `;
+          listContainer.innerHTML += card;
         });
+      } catch (err) {
+        console.error("Gagal memuat ucapan:", err);
+        listContainer.innerHTML = '<p style="text-align: center; color: #c0392b; font-size: 0.9em; font-style: italic;">Gagal memuat ucapan restu.</p>';
+      }
     }
 
-    function handleSendWish(event) {
+    // Mengirim ucapan dan doa restu ke Supabase
+    async function handleSendWish(event) {
       event.preventDefault();
 
       const nameInput = document.getElementById("wish-name");
       const messageInput = document.getElementById("wish-message");
       const sendButton = event.target.querySelector("button");
 
-      const name = nameInput.value.trim();
+      const senderName = nameInput.value.trim();
       const message = messageInput.value.trim();
 
-      if (!name || !message) return;
+      if (!senderName || !message) return;
 
       nameInput.disabled = true;
       messageInput.disabled = true;
       sendButton.disabled = true;
       sendButton.textContent = "Mengirim...";
 
-      fetch(wishesApiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          nama: name,
-          pesan: message
-        })
-      })
-        .then(res => res.json())
-        .then(() => {
-          messageInput.value = "";
-          nameInput.disabled = false;
-          messageInput.disabled = false;
-          sendButton.disabled = false;
-          sendButton.textContent = "✍️ Kirim Ucapan";
-          loadWishes();
-        })
-        .catch(err => {
-          console.error("Gagal mengirim ucapan:", err);
-          alert("Gagal mengirim ucapan restu. Silakan coba kembali.");
-          nameInput.disabled = false;
-          messageInput.disabled = false;
-          sendButton.disabled = false;
-          sendButton.textContent = "✍️ Kirim Ucapan";
-        });
+      try {
+        await WishesAPI.send(senderName, message);
+        messageInput.value = "";
+        nameInput.disabled = false;
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+        sendButton.textContent = "✍️ Kirim Ucapan";
+        loadWishes();
+      } catch (err) {
+        console.error("Gagal mengirim ucapan:", err);
+        alert("Gagal mengirim ucapan restu. Silakan coba kembali.");
+        nameInput.disabled = false;
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+        sendButton.textContent = "✍️ Kirim Ucapan";
+      }
     }
 
     function escapeHtml(str) {

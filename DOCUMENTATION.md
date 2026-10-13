@@ -16,67 +16,86 @@ Undangan pernikahan digital ini dirancang dengan gaya minimalis, modern, dan san
 * **Auto-Cycle:** Kartu berputar otomatis ke belakang setiap **4 detik**. Jika kartu disentuh/diketuk manual, pengukur waktu akan direset ulang agar tidak mengganggu interaksi tamu.
 * **Lightbox Zoom:** Mengetuk bagian tengah foto akan membuka gambar secara penuh. Ketika Lightbox terbuka, fungsi gulir halaman utama otomatis dikunci agar stabil.
 
-### 3. Keamanan Tautan & Privasi Tamu (`invite`)
-* **URL Parameter Khusus:** Menggunakan parameter `?invite=...` berbasis enkripsi Base64 URL-Safe untuk menyembunyikan nama tamu di bilah alamat browser.
-* **Proteksi Akses Tanpa Izin:** Jika tautan diakses tanpa parameter `invite` atau dengan kode yang tidak valid:
-  1. Halaman landing akan menampilkan pesan kesalahan: *⚠️ Tautan Undangan Tidak Valid*.
-  2. Elemen utama undangan (`#mainContainer`) akan **dihapus secara fisik dari DOM HTML** melalui Javascript untuk mencegah pembongkaran kode/inspeksi elemen.
+### 3. Keamanan Tautan, Privasi Tamu & Validasi Database Supabase
+* **URL Parameter Ramah Pengguna:** Menggunakan parameter nama biasa, misalnya: `?invite=Rubin Kurnianto` (juga tetap mendukung tautan Base64 lama untuk kompatibilitas).
+* **Validasi Real-time ke Supabase:**
+  1. Nama tamu dicocokkan secara otomatis ke tabel `guests` di Supabase (*case-insensitive*).
+  2. Jika tautan diakses tanpa nama atau nama tidak terdaftar di database:
+     * Halaman landing menampilkan peringatan: *⚠️ Tautan Undangan Tidak Valid*.
+     * Elemen utama undangan (`#mainContainer`) akan **dihapus secara fisik dari DOM HTML**.
+  3. **Tipe Tamu (Undangan vs Pengumuman):**
+     * **Undangan:** Menampilkan seluruh section lengkap (Pemberkatan, Resepsi, Hitung Mundur, Kado Pernikahan & QRIS, Doa Restu).
+     * **Pengumuman:** Otomatis menyembunyikan section **Resepsi** dan **Kado Pernikahan** (`.for-undangan-only`). Tamu tidak bisa memodifikasi URL sendiri karena tipe ditentukan langsung dari database.
 
-### 4. Pencegah Gangguan Gestur Layar
-* **Anti Zooming:** Blokir zoom viewport ganda (`maximum-scale=1.0, user-scalable=no`) dan penambahan `touch-action: pan-y;` pada kontainer utama. Halaman tidak akan berantakan meskipun tamu tidak sengaja melakukan ketuk-ganda (*double-tap*).
-* **Isolasi Scroll Ucapan (Anti Flick):** Area daftar ucapan doa restu dilengkapi filter `overscroll-behavior-y: contain` dan pemutus rambatan sentuhan (`touchstart`, `touchmove`, `touchend`) bersyarat pada batas atas/bawah. Tamu dapat men-scroll daftar pesan dengan sangat lancar tanpa takut tidak sengaja melompat ke section undangan lain.
-
----
-
-## 🛠️ Alat Bantu Kirim Undangan WhatsApp
-
-Untuk mempermudah pengiriman tautan undangan secara massal atau pribadi, telah disediakan berkas template Excel di folder utama proyek Anda:
-* **Berkas Excel:** [Daftar_Undangan_Whatsapp_Formula.xlsx](Daftar_Undangan_Whatsapp_Formula.xlsx)
-* **Skrip Generator (Python):** [generate_excel.py](generate_excel.py) (Jalankan dengan perintah `python generate_excel.py` untuk me-refresh template).
-
-### Cara Mengaktifkan Formula Konversi Otomatis:
-Di dalam berkas Excel tersebut, kolom URL Undangan menggunakan fungsi `=ENCODE_BASE64(B5)`. Agar fungsi ini aktif saat Anda menambahkan nama baru di Kolom B, ikuti langkah berikut:
-
-#### Opsi A: Di Google Sheets (Direkomendasikan)
-1. Unggah berkas Excel ke Google Drive dan buka di Google Sheets.
-2. Buka menu **Ekstensi** $\rightarrow$ **Apps Script**.
-3. Hapus kode bawaan, lalu masukkan kode berikut:
-   ```javascript
-   function ENCODE_BASE64(text) {
-     if (!text) return "";
-     var bytes = Utilities.newBlob(text).getBytes();
-     return Utilities.base64EncodeWebSafe(bytes);
-   }
-   ```
-4. Simpan proyek Apps Script. Rumus konversi nama menjadi Base64 akan otomatis aktif!
-
-#### Opsi B: Di Microsoft Excel Desktop (Windows/Mac)
-1. Buka berkas Excel, tekan `ALT + F11` untuk membuka editor VBA.
-2. Klik **Insert** $\rightarrow$ **Module**.
-3. Tempel kode VBA berikut:
-   ```vba
-   Function ENCODE_BASE64(text As String) As String
-       Dim arrData() As Byte
-       arrData = StrConv(text, vbFromUnicode)
-       Dim objXML As Object, objNode As Object
-       Set objXML = CreateObject("MSXML2.DOMDocument.3.0")
-       Set objNode = objXML.createElement("b64")
-       objNode.DataType = "bin.base64"
-       objNode.nodeTypedValue = arrData
-       ENCODE_BASE64 = Replace(Replace(Replace(objNode.text, vbLf, ""), vbCr, ""), "=", "")
-   End Function
-   ```
-4. Tutup editor VBA dan simpan berkas Anda sebagai format **Excel Macro-Enabled Workbook (`.xlsm`)**.
+### 4. Sistem Ucapan & Doa Restu Terintegrasi
+* Tamu dapat mengirimkan ucapan doa restu yang langsung tersimpan di tabel `wishes` Supabase.
+* Formulir ucapan otomatis terkunci dengan nama tamu terdaftar untuk mencegah manipulasi nama.
 
 ---
 
-## 🚀 Panduan Publikasi (Deployment)
+## 🛠️ Dashboard Admin & WhatsApp Sender (`admin.html`)
 
-1. **Unggah ke GitHub:**
-   Pastikan seluruh perubahan berkas (`CobaUnd_Mono.html`, folder `undangan`, dll.) di-commit dan di-push ke repositori GitHub Anda.
-2. **Aktifkan GitHub Pages:**
-   * Masuk ke menu **Settings** repositori Anda di GitHub.
-   * Pilih menu **Pages** di kolom sebelah kiri.
-   * Pada bagian *Build and deployment*, pilih branch `main` (atau `master`) dan folder `/ (root)`. Klik **Save**.
-   * Tunggu sekitar 1-2 menit. Undangan Anda akan aktif secara publik di alamat:  
-     `https://[username-github].github.io/CobaUnd_Mono.html`
+Aplikasi dilengkapi dengan panel admin modern bertema *Sage Green Luxury Glassmorphism* ([admin.html](admin.html)):
+* **Dashboard Statistik:** Menghitung total tamu, tipe undangan vs pengumuman, rasio kirim (progress bar), serta rincian per pihak pengundang dan relasi.
+* **Form Manajemen Tamu:** Menambah dan mengedit data tamu (Nama, No HP, Tipe, Relasi, Pihak Pengundang: Lukas, Bapak Lukas, Kezia, Papa Kezia, Mama Kezia).
+* **Smart Template WhatsApp:**
+  * Secara cerdas memilih format pesan yang tepat:
+    1. *Undangan Formal* (Keluarga, rekan kerja orang tua).
+    2. *Undangan Santai* (Teman sebaya).
+    3. *Pengumuman Santai* (Sesuai teks hangat Lukas & Kezia).
+    4. *Pengumuman Formal*.
+  * Dilengkapi pratinjau bubble chat WhatsApp langsung dan dukungan placeholder `{Nama}`, `{URL}`, `{Pihak}`, `{Relasi}`.
+* **Aksi Sekali Klik:** Tombol **Kirim WA** yang otomatis membuka WhatsApp dan mengubah status tamu menjadi `Terkirim` di Supabase.
+* **Import & Export CSV:** Memungkinkan migrasi atau backup data tamu dalam jumlah banyak sekaligus.
+
+---
+
+## 🗄️ Skema Database Supabase
+
+Jalankan script berikut pada menu **SQL Editor** di Supabase Anda:
+
+```sql
+-- 1. TABEL TAMU (GUESTS)
+create table public.guests (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  phone text,
+  type text not null default 'undangan' check (type in ('undangan', 'pengumuman')),
+  relation text not null default 'Lainnya',
+  sender text not null default 'Lukas',
+  status text not null default 'pending' check (status in ('pending', 'terkirim')),
+  sent_at timestamp with time zone,
+  created_at timestamp with time zone default now()
+);
+
+create index idx_guests_name_lower on public.guests (lower(name));
+
+-- 2. TABEL UCAPAN & DOA RESTU (WISHES)
+create table public.wishes (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  message text not null,
+  created_at timestamp with time zone default now()
+);
+
+-- 3. POLICIES (RLS)
+alter table public.guests enable row level security;
+alter table public.wishes enable row level security;
+
+create policy "Allow read guests" on public.guests for select using (true);
+create policy "Allow modify guests" on public.guests for all using (true);
+create policy "Allow read wishes" on public.wishes for select using (true);
+create policy "Allow insert wishes" on public.wishes for insert with check (true);
+```
+
+---
+
+## ⚙️ Cara Menghubungkan Supabase
+Buka berkas [supabaseConfig.js](supabaseConfig.js) lalu masukkan kredensial proyek Supabase Anda:
+```javascript
+const SUPABASE_CONFIG = {
+  url: "https://YOUR_PROJECT_ID.supabase.co",
+  anonKey: "YOUR_SUPABASE_ANON_KEY",
+};
+```
+*(Selama belum diisi key asli, sistem tetap dapat dicoba dengan mode demonstrasi lokal).*
