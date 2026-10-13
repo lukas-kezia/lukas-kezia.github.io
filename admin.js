@@ -19,6 +19,8 @@ function createSafeInviteUrl(guestName) {
 let guests = [];
 let wishes = [];
 let editingGuestId = null;
+let donutChartInstance = null;
+let stackedBarChartInstance = null;
 
 // Template Preset Defaults
 const DEFAULT_TEMPLATES = {
@@ -203,14 +205,18 @@ async function refreshData() {
   if (refreshBtn) refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat...';
 
   try {
-    guests = await GuestsAPI.getAll();
-    if (!Array.isArray(guests)) guests = [];
+    const [fetchedGuests, fetchedWishes] = await Promise.all([
+      GuestsAPI.getAll(),
+      WishesAPI.getAll()
+    ]);
+    guests = Array.isArray(fetchedGuests) ? fetchedGuests : [];
+    wishes = Array.isArray(fetchedWishes) ? fetchedWishes : [];
     renderTable();
     updateStats();
-    loadWishesAdmin();
+    renderWishesFeed();
   } catch (err) {
     console.error("Gagal menarik data:", err);
-    alert("Terjadi kesalahan saat memuat data tamu: " + err.message);
+    alert("Terjadi kesalahan saat memuat data: " + err.message);
   } finally {
     if (refreshBtn) refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Tarik Data';
   }
@@ -227,7 +233,11 @@ function renderTable() {
 
   const filtered = guests.filter(g => {
     const matchSearch = (g.name || "").toLowerCase().includes(search) || (g.phone || "").includes(search);
-    const matchType = filterType === "all" || g.type === filterType;
+    const matchType = filterType === "all" ||
+      (filterType === "undangan_digital" && (g.type === "undangan_digital" || g.type === "undangan")) ||
+      (filterType === "undangan_fisik" && g.type === "undangan_fisik") ||
+      (filterType === "pengumuman" && g.type === "pengumuman") ||
+      g.type === filterType;
     const matchSender = filterSender === "all" || g.sender === filterSender;
     const matchRelation = filterRelation === "all" || g.relation === filterRelation;
     const matchStatus = filterStatus === "all" || g.status === filterStatus;
@@ -237,7 +247,7 @@ function renderTable() {
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="9">
+        <td colspan="10">
           <div class="empty-state">
             <i class="fas fa-user-friends"></i>
             <p>Tidak ada data tamu yang cocok dengan filter pencarian.</p>
@@ -254,9 +264,14 @@ function renderTable() {
       ? `<span class="badge badge-sent"><i class="fas fa-check"></i> Terkirim</span>`
       : `<span class="badge badge-pending"><i class="fas fa-clock"></i> Pending</span>`;
 
-    const typeBadge = g.type === "pengumuman"
-      ? `<span class="badge badge-pengumuman">📢 Pengumuman</span>`
-      : `<span class="badge badge-undangan">💌 Undangan</span>`;
+    let typeBadge = "";
+    if (g.type === "pengumuman") {
+      typeBadge = `<span class="badge badge-pengumuman">📢 Pengumuman</span>`;
+    } else if (g.type === "undangan_fisik") {
+      typeBadge = `<span class="badge badge-undangan-fisik">📜 Fisik</span>`;
+    } else {
+      typeBadge = `<span class="badge badge-undangan">💌 Digital</span>`;
+    }
 
     const smartKey = getSmartTemplateKey(g);
     const templateLabel = {
@@ -365,52 +380,305 @@ function updateStats() {
   const total = guests.length;
   const sent = guests.filter(g => g.status === "terkirim").length;
   const pending = total - sent;
-  const undangan = guests.filter(g => g.type === "undangan").length;
+  const digital = guests.filter(g => g.type === "undangan_digital" || g.type === "undangan" || !g.type).length;
+  const fisik = guests.filter(g => g.type === "undangan_fisik").length;
   const pengumuman = guests.filter(g => g.type === "pengumuman").length;
 
-  document.getElementById("stat-total").textContent = total;
-  document.getElementById("stat-undangan").textContent = undangan;
-  document.getElementById("stat-pengumuman").textContent = pengumuman;
-  document.getElementById("stat-sent").textContent = sent;
-  document.getElementById("stat-pending").textContent = pending;
+  const statTotal = document.getElementById("stat-total");
+  if (statTotal) statTotal.textContent = total;
+
+  const statSent = document.getElementById("stat-sent");
+  if (statSent) statSent.textContent = sent;
+
+  const statPending = document.getElementById("stat-pending");
+  if (statPending) statPending.textContent = pending;
 
   const pct = total > 0 ? Math.round((sent / total) * 100) : 0;
-  document.getElementById("progress-percentage").textContent = pct + "%";
-  document.getElementById("progress-bar").style.width = pct + "%";
+  const statProgressPct = document.getElementById("stat-progress-pct");
+  if (statProgressPct) statProgressPct.textContent = pct + "%";
+
+  const statWishesCount = document.getElementById("stat-wishes-count");
+  if (statWishesCount) statWishesCount.textContent = wishes.length;
+
+  const sidebarBadge = document.getElementById("sidebar-wishes-badge");
+  if (sidebarBadge) sidebarBadge.textContent = wishes.length;
+
+  // Update Legenda Donut
+  const digitalPct = total > 0 ? Math.round((digital / total) * 100) : 0;
+  const fisikPct = total > 0 ? Math.round((fisik / total) * 100) : 0;
+  const pengumumanPct = total > 0 ? Math.round((pengumuman / total) * 100) : 0;
+
+  const elDigCount = document.getElementById("legend-digital-count");
+  if (elDigCount) elDigCount.textContent = digital;
+  const elDigPct = document.getElementById("legend-digital-pct");
+  if (elDigPct) elDigPct.textContent = `(${digitalPct}%)`;
+
+  const elFisCount = document.getElementById("legend-fisik-count");
+  if (elFisCount) elFisCount.textContent = fisik;
+  const elFisPct = document.getElementById("legend-fisik-pct");
+  if (elFisPct) elFisPct.textContent = `(${fisikPct}%)`;
+
+  const elPengCount = document.getElementById("legend-pengumuman-count");
+  if (elPengCount) elPengCount.textContent = pengumuman;
+  const elPengPct = document.getElementById("legend-pengumuman-pct");
+  if (elPengPct) elPengPct.textContent = `(${pengumumanPct}%)`;
+
+  // Render / Update Charts
+  updateDashboardCharts(digital, fisik, pengumuman);
+}
+
+// Render / Update Grafik Dashboard (Chart.js)
+function updateDashboardCharts(digital, fisik, pengumuman) {
+  if (typeof Chart === "undefined") return;
+
+  // 1. DONUT CHART (Row 1)
+  const canvasDonut = document.getElementById("chart-invitation-donut");
+  if (canvasDonut) {
+    if (donutChartInstance) {
+      donutChartInstance.destroy();
+    }
+
+    const ctxDonut = canvasDonut.getContext("2d");
+    donutChartInstance = new Chart(ctxDonut, {
+      type: "doughnut",
+      data: {
+        labels: ["Undangan Digital", "Undangan Fisik", "Pengumuman Saja"],
+        datasets: [{
+          data: [digital, fisik, pengumuman],
+          backgroundColor: ["#3b5d3b", "#c5a059", "#8f3115"],
+          hoverBackgroundColor: ["#263d26", "#ab8841", "#6e210b"],
+          borderWidth: 3,
+          borderColor: "#ffffff"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "68%",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const val = ctx.raw || 0;
+                const p = total > 0 ? Math.round((val / total) * 100) : 0;
+                return ` ${ctx.label}: ${val} Tamu (${p}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // 2. STACKED BAR CHART (Row 2): Pihak Pengundang x Jenis Undangan
+  const canvasBar = document.getElementById("chart-stacked-bar");
+  if (canvasBar) {
+    if (stackedBarChartInstance) {
+      stackedBarChartInstance.destroy();
+    }
+
+    const senders = ["Lukas", "Bapak Lukas", "Kezia", "Papa Kezia", "Mama Kezia"];
+    const digitalPerSender = senders.map(s =>
+      guests.filter(g => g.sender === s && (g.type === "undangan_digital" || g.type === "undangan" || !g.type)).length
+    );
+    const fisikPerSender = senders.map(s =>
+      guests.filter(g => g.sender === s && g.type === "undangan_fisik").length
+    );
+    const pengumumanPerSender = senders.map(s =>
+      guests.filter(g => g.sender === s && g.type === "pengumuman").length
+    );
+
+    const ctxBar = canvasBar.getContext("2d");
+    stackedBarChartInstance = new Chart(ctxBar, {
+      type: "bar",
+      data: {
+        labels: senders,
+        datasets: [
+          {
+            label: "Undangan Digital",
+            data: digitalPerSender,
+            backgroundColor: "#3b5d3b",
+            borderRadius: 4
+          },
+          {
+            label: "Undangan Fisik",
+            data: fisikPerSender,
+            backgroundColor: "#c5a059",
+            borderRadius: 4
+          },
+          {
+            label: "Pengumuman Saja",
+            data: pengumumanPerSender,
+            backgroundColor: "#8f3115",
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            stacked: true,
+            grid: { display: false },
+            ticks: {
+              font: { family: "'Plus Jakarta Sans', sans-serif", weight: "600", size: 12 },
+              color: "#2f3e2f"
+            }
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            grid: { color: "rgba(59, 93, 59, 0.08)" },
+            ticks: {
+              stepSize: 5,
+              font: { family: "'Plus Jakarta Sans', sans-serif" },
+              color: "#5e705e"
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: "top",
+            labels: {
+              boxWidth: 14,
+              font: { family: "'Plus Jakarta Sans', sans-serif", weight: "600", size: 12 },
+              color: "#243324",
+              padding: 16
+            }
+          },
+          tooltip: {
+            mode: "index",
+            intersect: false
+          }
+        }
+      }
+    });
+  }
+}
+
+// Navigasi Pindah View Sidebar
+function switchView(viewId, btnEl) {
+  document.querySelectorAll(".sidebar-nav .nav-item").forEach(el => el.classList.remove("active"));
+  if (btnEl) btnEl.classList.add("active");
+
+  document.querySelectorAll(".admin-view").forEach(v => v.classList.remove("active"));
+  const targetView = document.getElementById(viewId);
+  if (targetView) targetView.classList.add("active");
+
+  const titleEl = document.getElementById("top-title");
+  const subEl = document.getElementById("top-subtitle");
+
+  const viewTitles = {
+    "view-dashboard": {
+      title: "Dashboard Analitik",
+      sub: "Visualisasi distribusi undangan, kuota pengundang, dan metrik kirim"
+    },
+    "view-spreadsheet": {
+      title: "Data Tamu (Spreadsheet Grid)",
+      sub: "Edit langsung pada sel tabel atau paste banyak data sekaligus dari Excel"
+    },
+    "view-messages": {
+      title: "Kirim Pesan & Broadcast WhatsApp",
+      sub: "Kirim tautan undangan ke kontak tamu dengan format template otomatis"
+    },
+    "view-wishes": {
+      title: "Doa Restu & Ucapan Tamu",
+      sub: "Daftar ucapan dan doa yang dikirimkan oleh tamu undangan melalui website"
+    }
+  };
+
+  if (viewTitles[viewId]) {
+    if (titleEl) titleEl.textContent = viewTitles[viewId].title;
+    if (subEl) subEl.textContent = viewTitles[viewId].sub;
+  }
+
+  if (viewId === "view-spreadsheet") {
+    loadSpreadsheetFromGuests();
+  } else if (viewId === "view-dashboard") {
+    updateStats();
+  }
+}
+
+// Sub-tab di View Kirim Pesan
+function switchMessagesSubTab(subTab) {
+  const btnList = document.getElementById("subtab-btn-list");
+  const btnTmpl = document.getElementById("subtab-btn-templates");
+  const subList = document.getElementById("messages-sub-list");
+  const subTmpl = document.getElementById("messages-sub-templates");
+
+  if (subTab === "list") {
+    btnList.classList.add("active");
+    btnTmpl.classList.remove("active");
+    subList.style.display = "block";
+    subTmpl.style.display = "none";
+  } else {
+    btnList.classList.remove("active");
+    btnTmpl.classList.add("active");
+    subList.style.display = "none";
+    subTmpl.style.display = "block";
+  }
+}
+
+// Filter Interaktif via Klik Legenda Chart
+function filterByChartType(type) {
+  const navBtn = document.querySelector(".sidebar-nav .nav-item[data-view='view-messages']");
+  switchView("view-messages", navBtn);
+  switchMessagesSubTab("list");
+
+  const select = document.getElementById("filter-type");
+  if (select) {
+    select.value = type;
+    renderTable();
+  }
+}
+
+function toggleSidebarMobile() {
+  const sidebar = document.getElementById("admin-sidebar");
+  if (sidebar) sidebar.classList.toggle("mobile-open");
 }
 
 // Load Ucapan Tamu Masuk (Wishes)
 async function loadWishesAdmin() {
-  const container = document.getElementById("wishes-feed");
-  if (!container) return;
-
   try {
     wishes = await WishesAPI.getAll();
-    if (!wishes || wishes.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state" style="grid-column: 1 / -1;">
-          <i class="fas fa-envelope-open"></i>
-          <p>Belum ada ucapan doa restu yang masuk dari tamu.</p>
-        </div>
-      `;
-      return;
-    }
-
-    container.innerHTML = wishes.map(w => {
-      const date = w.created_at ? new Date(w.created_at).toLocaleString("id-ID") : "-";
-      return `
-        <div class="wish-item glass">
-          <div class="wish-header">
-            <span class="wish-name">💌 ${escapeHtml(w.name)}</span>
-            <span class="wish-time">${date}</span>
-          </div>
-          <p class="wish-text">${escapeHtml(w.message)}</p>
-        </div>
-      `;
-    }).join("");
+    if (!Array.isArray(wishes)) wishes = [];
+    updateStats();
+    renderWishesFeed();
   } catch (err) {
     console.error("Gagal memuat ucapan:", err);
   }
+}
+
+// Render Kartu-Kartu Ucapan Masuk
+function renderWishesFeed() {
+  const container = document.getElementById("wishes-feed");
+  if (!container) return;
+
+  if (!wishes || wishes.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="grid-column: 1 / -1;">
+        <i class="fas fa-envelope-open"></i>
+        <p>Belum ada ucapan doa restu yang masuk dari tamu.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = wishes.map(w => {
+    const date = w.created_at ? new Date(w.created_at).toLocaleString("id-ID") : "-";
+    return `
+      <div class="wish-item glass">
+        <div class="wish-header">
+          <span class="wish-name">💌 ${escapeHtml(w.name)}</span>
+          <span class="wish-time">${date}</span>
+        </div>
+        <p class="wish-text">${escapeHtml(w.message)}</p>
+      </div>
+    `;
+  }).join("");
 }
 
 // Modal Tambah / Edit Tamu
@@ -430,7 +698,7 @@ function openEditModal(id) {
   document.getElementById("modal-guest-title").textContent = "Edit Data Tamu";
   document.getElementById("guest-name").value = guest.name || "";
   document.getElementById("guest-phone").value = guest.phone || "";
-  document.getElementById("guest-type").value = guest.type || "undangan";
+  document.getElementById("guest-type").value = (guest.type === "undangan" ? "undangan_digital" : (guest.type || "undangan_digital"));
   document.getElementById("guest-relation").value = guest.relation || "Lainnya";
   document.getElementById("guest-sender").value = guest.sender || "Lukas";
   document.getElementById("guest-status").value = guest.status || "pending";
@@ -689,4 +957,424 @@ function initEventListeners() {
       }
     });
   }
+
+  // Keyboard shortcut Ctrl+S untuk simpan spreadsheet
+  window.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+      const sheetTab = document.getElementById("tab-spreadsheet");
+      if (sheetTab && sheetTab.style.display !== "none") {
+        e.preventDefault();
+        saveAllSpreadsheetChanges();
+      }
+    }
+  });
+
+  // Listener tab spreadsheet
+  const sheetTabBtn = document.getElementById("tab-btn-spreadsheet");
+  if (sheetTabBtn) {
+    sheetTabBtn.addEventListener("click", () => {
+      loadSpreadsheetFromGuests();
+    });
+  }
 }
+
+// ============================================================
+// SPREADSHEET GRID EDITOR LOGIC
+// ============================================================
+
+const SHEET_TYPES = [
+  { val: "undangan_digital", label: "💌 Undangan Digital" },
+  { val: "undangan_fisik", label: "📜 Undangan Fisik" },
+  { val: "pengumuman", label: "📢 Pengumuman Saja" }
+];
+
+const SHEET_RELATIONS = [
+  "Keluarga / Saudara",
+  "Teman Sekolah",
+  "Teman Kuliah",
+  "Teman Kerja / Rekan Bisnis",
+  "Jemaat / Pelayanan Gereja",
+  "Sahabat Dekat",
+  "Lainnya"
+];
+
+const SHEET_SENDERS = [
+  "Lukas",
+  "Bapak Lukas",
+  "Kezia",
+  "Papa Kezia",
+  "Mama Kezia"
+];
+
+const SHEET_STATUSES = [
+  { val: "pending", label: "Pending" },
+  { val: "terkirim", label: "Terkirim" }
+];
+
+let spreadsheetData = [];
+let dirtyRowIds = new Set();
+let deletedGuestIds = new Set();
+let newRowTempId = 1;
+
+// Pindah tab ke spreadsheet
+function switchToSpreadsheetTab() {
+  const tabBtn = document.getElementById("tab-btn-spreadsheet");
+  if (tabBtn) tabBtn.click();
+}
+
+// Muat data dari guests ke spreadsheetData
+function loadSpreadsheetFromGuests() {
+  spreadsheetData = guests.map(g => ({
+    id: g.id,
+    name: g.name || "",
+    phone: g.phone || "",
+    type: (g.type === "undangan" ? "undangan_digital" : (g.type || "undangan_digital")),
+    relation: g.relation || "Lainnya",
+    sender: g.sender || "Lukas",
+    status: g.status || "pending",
+    isNew: false
+  }));
+
+  dirtyRowIds.clear();
+  deletedGuestIds.clear();
+  updateDirtyBadge();
+  renderSpreadsheetTable();
+}
+
+// Render Tabel Spreadsheet
+function renderSpreadsheetTable() {
+  const tbody = document.getElementById("spreadsheet-tbody");
+  if (!tbody) return;
+
+  const filterText = (document.getElementById("sheet-filter")?.value || "").toLowerCase().trim();
+
+  if (spreadsheetData.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center; padding: 40px; color: #888;">
+          <i class="fas fa-table" style="font-size: 32px; color: #bbb; margin-bottom: 10px; display: block;"></i>
+          Belum ada baris data. Klik <strong>+1 Baris</strong> atau <strong>Paste dari Excel</strong> untuk memulai.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = spreadsheetData.map((row, idx) => {
+    // Filter pencarian sederhana
+    if (filterText) {
+      const match = row.name.toLowerCase().includes(filterText) ||
+                    row.phone.includes(filterText) ||
+                    row.relation.toLowerCase().includes(filterText) ||
+                    row.sender.toLowerCase().includes(filterText);
+      if (!match) return "";
+    }
+
+    const isDirty = dirtyRowIds.has(row.id);
+    const rowClass = row.isNew ? "is-new" : (isDirty ? "is-dirty" : "");
+
+    return `
+      <tr class="${rowClass}" data-row-id="${row.id}">
+        <td class="sheet-cell-idx">${idx + 1}</td>
+        <td>
+          <input type="text" class="sheet-input sheet-focus-name" value="${escapeHtml(row.name)}"
+            placeholder="Ketik nama tamu..."
+            oninput="onSheetCellInput('${row.id}', 'name', this.value)"
+            onkeydown="handleSheetKeyNav(event, ${idx}, 'name')">
+        </td>
+        <td>
+          <input type="text" class="sheet-input" value="${escapeHtml(row.phone)}"
+            placeholder="08... / 628..."
+            oninput="onSheetCellInput('${row.id}', 'phone', this.value)"
+            onchange="onSheetPhoneBlur('${row.id}', this)"
+            onkeydown="handleSheetKeyNav(event, ${idx}, 'phone')">
+        </td>
+        <td>
+          <select class="sheet-select" onchange="onSheetCellInput('${row.id}', 'type', this.value)">
+            ${SHEET_TYPES.map(t => `<option value="${t.val}" ${row.type === t.val ? 'selected' : ''}>${t.label}</option>`).join("")}
+          </select>
+        </td>
+        <td>
+          <select class="sheet-select" onchange="onSheetCellInput('${row.id}', 'relation', this.value)">
+            ${SHEET_RELATIONS.map(r => `<option value="${r}" ${row.relation === r ? 'selected' : ''}>${r}</option>`).join("")}
+          </select>
+        </td>
+        <td>
+          <select class="sheet-select" onchange="onSheetCellInput('${row.id}', 'sender', this.value)">
+            ${SHEET_SENDERS.map(s => `<option value="${s}" ${row.sender === s ? 'selected' : ''}>${s}</option>`).join("")}
+          </select>
+        </td>
+        <td>
+          <select class="sheet-select" onchange="onSheetCellInput('${row.id}', 'status', this.value)">
+            ${SHEET_STATUSES.map(st => `<option value="${st.val}" ${row.status === st.val ? 'selected' : ''}>${st.label}</option>`).join("")}
+          </select>
+        </td>
+        <td style="text-align: center;">
+          <button class="sheet-btn-delete" onclick="deleteSpreadsheetRow('${row.id}')" title="Hapus baris ini">
+            <i class="fas fa-times"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+// Tangani perubahan pada sel input
+function onSheetCellInput(rowId, field, value) {
+  const row = spreadsheetData.find(r => r.id === rowId);
+  if (!row) return;
+
+  row[field] = value;
+  dirtyRowIds.add(rowId);
+
+  // Tandai visual baris
+  const tr = document.querySelector(`tr[data-row-id="${rowId}"]`);
+  if (tr && !row.isNew) tr.classList.add("is-dirty");
+
+  updateDirtyBadge();
+}
+
+// Format nomor HP saat blur
+function onSheetPhoneBlur(rowId, inputEl) {
+  const formatted = formatPhoneNumber(inputEl.value);
+  inputEl.value = formatted;
+  onSheetCellInput(rowId, "phone", formatted);
+}
+
+// Navigasi Keyboard seperti Spreadsheet (Enter = pindah ke baris berikutnya)
+function handleSheetKeyNav(e, currentIdx, fieldName) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const rows = document.querySelectorAll("#spreadsheet-tbody tr");
+    if (currentIdx + 1 < rows.length) {
+      // Pindah ke baris berikutnya
+      const nextInput = rows[currentIdx + 1].querySelector(`.sheet-input[placeholder*="${fieldName === 'name' ? 'nama' : '08'}"]`);
+      if (nextInput) nextInput.focus();
+    } else {
+      // Sudah di baris terakhir: buat baris baru otomatis!
+      addSpreadsheetRow(1, true);
+    }
+  }
+}
+
+// Tambah baris kosong
+function addSpreadsheetRow(count = 1, focusNew = false) {
+  const newIds = [];
+  for (let i = 0; i < count; i++) {
+    const tempId = "new_" + Date.now() + "_" + (newRowTempId++);
+    const newRow = {
+      id: tempId,
+      name: "",
+      phone: "",
+      type: "undangan_digital",
+      relation: "Lainnya",
+      sender: "Lukas",
+      status: "pending",
+      isNew: true
+    };
+    spreadsheetData.push(newRow);
+    dirtyRowIds.add(tempId);
+    newIds.push(tempId);
+  }
+
+  updateDirtyBadge();
+  renderSpreadsheetTable();
+
+  // Scroll ke bawah
+  const wrapper = document.getElementById("spreadsheet-wrapper");
+  if (wrapper) wrapper.scrollTop = wrapper.scrollHeight;
+
+  // Fokuskan ke baris baru pertama
+  if (focusNew && newIds.length > 0) {
+    setTimeout(() => {
+      const firstNewTr = document.querySelector(`tr[data-row-id="${newIds[0]}"] .sheet-focus-name`);
+      if (firstNewTr) firstNewTr.focus();
+    }, 50);
+  }
+}
+
+// Hapus baris dari spreadsheet
+function deleteSpreadsheetRow(rowId) {
+  const row = spreadsheetData.find(r => r.id === rowId);
+  if (!row) return;
+
+  if (row.name && !confirm(`Hapus baris tamu "${row.name}"?`)) {
+    return;
+  }
+
+  if (!row.isNew) {
+    deletedGuestIds.add(row.id);
+  }
+
+  spreadsheetData = spreadsheetData.filter(r => r.id !== rowId);
+  dirtyRowIds.delete(rowId);
+
+  updateDirtyBadge();
+  renderSpreadsheetTable();
+}
+
+// Filter pencarian tabel spreadsheet
+function filterSpreadsheetRows() {
+  renderSpreadsheetTable();
+}
+
+// Update badge perubahan
+function updateDirtyBadge() {
+  const badge = document.getElementById("sheet-dirty-badge");
+  const countEl = document.getElementById("sheet-dirty-count");
+  const totalChanges = dirtyRowIds.size + deletedGuestIds.size;
+
+  if (badge && countEl) {
+    if (totalChanges > 0) {
+      badge.style.display = "inline-flex";
+      countEl.textContent = totalChanges;
+    } else {
+      badge.style.display = "none";
+    }
+  }
+}
+
+// Simpan Semua Perubahan Spreadsheet ke Supabase
+async function saveAllSpreadsheetChanges() {
+  const saveBtn = document.getElementById("btn-save-spreadsheet");
+  const totalChanges = dirtyRowIds.size + deletedGuestIds.size;
+
+  if (totalChanges === 0) {
+    alert("ℹ️ Tidak ada perubahan yang perlu disimpan.");
+    return;
+  }
+
+  // Validasi: pastikan nama tidak kosong untuk baris yang diubah/baru
+  const invalidRows = spreadsheetData.filter(r => dirtyRowIds.has(r.id) && !r.name.trim());
+  if (invalidRows.length > 0) {
+    alert("⚠️ Ditemukan baris tanpa Nama Tamu! Harap isi nama tamu atau hapus baris yang kosong sebelum menyimpan.");
+    return;
+  }
+
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+  try {
+    let successCount = 0;
+
+    // 1. Eksekusi Hapus
+    for (const delId of deletedGuestIds) {
+      await GuestsAPI.delete(delId);
+      successCount++;
+    }
+
+    // 2. Eksekusi Tambah & Update
+    for (const rowId of dirtyRowIds) {
+      const row = spreadsheetData.find(r => r.id === rowId);
+      if (!row) continue;
+
+      const payload = {
+        name: row.name.trim(),
+        phone: formatPhoneNumber(row.phone),
+        type: row.type,
+        relation: row.relation,
+        sender: row.sender,
+        status: row.status
+      };
+
+      if (row.isNew) {
+        await GuestsAPI.create(payload);
+      } else {
+        await GuestsAPI.update(row.id, payload);
+      }
+      successCount++;
+    }
+
+    alert(`✅ Berhasil menyimpan ${successCount} perubahan ke database Supabase!`);
+
+    // Muat ulang data terbaru
+    await refreshData();
+    loadSpreadsheetFromGuests();
+
+  } catch (err) {
+    console.error("Gagal menyimpan spreadsheet:", err);
+    alert("Terjadi kesalahan saat menyimpan perubahan: " + err.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Semua';
+  }
+}
+
+// ============================================================
+// PASTE DARI EXCEL MODAL LOGIC
+// ============================================================
+
+function openPasteModal() {
+  document.getElementById("paste-input").value = "";
+  document.getElementById("modal-paste").classList.add("active");
+  setTimeout(() => document.getElementById("paste-input").focus(), 100);
+}
+
+function closePasteModal() {
+  document.getElementById("modal-paste").classList.remove("active");
+}
+
+function processPastedText() {
+  const text = document.getElementById("paste-input").value;
+  if (!text.trim()) {
+    alert("Kotak teks masih kosong!");
+    return;
+  }
+
+  const lines = text.split(/\r\n|\n/).filter(l => l.trim() !== "");
+  let added = 0;
+
+  for (const line of lines) {
+    const parts = line.split("\t");
+    if (parts.length >= 1 && parts[0].trim()) {
+      const name = parts[0].trim();
+      const col2 = parts[1] ? parts[1].trim() : "";
+      const col3 = parts[2] ? parts[2].trim() : "";
+
+      // Deteksi otomatis jika kolom 2 adalah No HP atau Relasi
+      let phone = "";
+      let relation = "Lainnya";
+      let sender = "Lukas";
+
+      if (/^\+?[\d\s-]{6,}$/.test(col2)) {
+        phone = formatPhoneNumber(col2);
+        if (col3) relation = col3;
+      } else if (col2) {
+        relation = col2;
+      }
+
+      // Deteksi pihak pengundang berdasarkan teks relasi
+      const relLower = (relation + " " + col3).toLowerCase();
+      if (relLower.includes("bapak") || relLower.includes("bapake")) sender = "Bapak Lukas";
+      else if (relLower.includes("papa")) sender = "Papa Kezia";
+      else if (relLower.includes("mama")) sender = "Mama Kezia";
+      else if (relLower.includes("kezia")) sender = "Kezia";
+
+      const tempId = "new_" + Date.now() + "_" + (newRowTempId++);
+      spreadsheetData.push({
+        id: tempId,
+        name,
+        phone,
+        type: "undangan",
+        relation,
+        sender,
+        status: "pending",
+        isNew: true
+      });
+
+      dirtyRowIds.add(tempId);
+      added++;
+    }
+  }
+
+  closePasteModal();
+  updateDirtyBadge();
+  renderSpreadsheetTable();
+
+  // Scroll ke bawah
+  const wrapper = document.getElementById("spreadsheet-wrapper");
+  if (wrapper) wrapper.scrollTop = wrapper.scrollHeight;
+
+  alert(`✅ Berhasil menambahkan ${added} baris tamu baru dari Excel ke spreadsheet! Tekan "Simpan Semua" untuk menyimpannya ke database.`);
+}
+

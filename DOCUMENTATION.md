@@ -36,8 +36,12 @@ Undangan pernikahan digital ini dirancang dengan gaya minimalis, modern, dan san
 ## 🛠️ Dashboard Admin & WhatsApp Sender (`admin.html`)
 
 Aplikasi dilengkapi dengan panel admin modern bertema *Sage Green Luxury Glassmorphism* ([admin.html](admin.html)):
+* **Spreadsheet Grid Editor (Input Cepat Massal):**
+  * Tampilan tabel interaktif bergaya Excel / Google Sheets di mana Anda bisa langsung mengetik dan mengedit data nama, no HP, tipe, relasi, dan pihak langsung pada sel tabel tanpa perlu popup satu per satu.
+  * Dukungan **Copy-Paste Massal dari Excel / Sheets**: Cukup salin beberapa baris dari Excel lalu klik tombol *Paste dari Excel*.
+  * Navigasi keyboard pintar: Tekan **Enter** untuk langsung pindah ke baris berikutnya atau otomatis membuat baris baru.
+  * Pintasan cepat simpan: Tekan **Ctrl + S** untuk menyimpan seluruh perubahan sekaligus ke Supabase.
 * **Dashboard Statistik:** Menghitung total tamu, tipe undangan vs pengumuman, rasio kirim (progress bar), serta rincian per pihak pengundang dan relasi.
-* **Form Manajemen Tamu:** Menambah dan mengedit data tamu (Nama, No HP, Tipe, Relasi, Pihak Pengundang: Lukas, Bapak Lukas, Kezia, Papa Kezia, Mama Kezia).
 * **Smart Template WhatsApp:**
   * Secara cerdas memilih format pesan yang tepat:
     1. *Undangan Formal* (Keluarga, rekan kerja orang tua).
@@ -47,6 +51,17 @@ Aplikasi dilengkapi dengan panel admin modern bertema *Sage Green Luxury Glassmo
   * Dilengkapi pratinjau bubble chat WhatsApp langsung dan dukungan placeholder `{Nama}`, `{URL}`, `{Pihak}`, `{Relasi}`.
 * **Aksi Sekali Klik:** Tombol **Kirim WA** yang otomatis membuka WhatsApp dan mengubah status tamu menjadi `Terkirim` di Supabase.
 * **Import & Export CSV:** Memungkinkan migrasi atau backup data tamu dalam jumlah banyak sekaligus.
+
+* **Sidebar Navigasi Modern & Rapi:**
+  * Sidebar tetap di sebelah kiri mengelompokkan fitur dengan rapi:
+    1. **Dashboard:** Donut Chart jenis undangan, 4 Kartu KPI (Pesan Terkirim, Belum Terkirim, Total Tamu, Doa Restu Masuk), serta Stacked Bar Chart alokasi kuota per pihak pengundang.
+    2. **Data Tamu:** Spreadsheet Grid Editor untuk input dan pengeditan cepat bergaya Excel serta copy-paste massal.
+    3. **Kirim Pesan:** Tabel broadcast WhatsApp dengan 1-klik kirim, penyaringan multi-kategori, dan editor template pesan.
+    4. **Doa Restu:** Feed live ucapan selamat dan doa restu yang masuk dari tamu via website (dengan badge counter).
+* **3 Kategori Undangan:**
+  * `undangan_digital` (Undangan Digital - Akses penuh web & WA)
+  * `undangan_fisik` (Undangan Fisik - Kartu cetak resmi)
+  * `pengumuman` (Pengumuman Saja - Hanya pemberkatan & doa)
 
 ---
 
@@ -60,7 +75,7 @@ create table public.guests (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   phone text,
-  type text not null default 'undangan' check (type in ('undangan', 'pengumuman')),
+  type text not null default 'undangan_digital' check (type in ('undangan_digital', 'undangan_fisik', 'pengumuman', 'undangan')),
   relation text not null default 'Lainnya',
   sender text not null default 'Lukas',
   status text not null default 'pending' check (status in ('pending', 'terkirim')),
@@ -69,6 +84,11 @@ create table public.guests (
 );
 
 create index idx_guests_name_lower on public.guests (lower(name));
+
+-- JIKA TABEL SUDAH DIBUAT SEBELUMNYA, PERBARUI CHECK CONSTRAINT UNTUK 3 KATEGORI:
+alter table public.guests drop constraint if exists guests_type_check;
+alter table public.guests add constraint guests_type_check 
+  check (type in ('undangan_digital', 'undangan_fisik', 'pengumuman', 'undangan'));
 
 -- 2. TABEL UCAPAN & DOA RESTU (WISHES)
 create table public.wishes (

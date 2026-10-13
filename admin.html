@@ -3,287 +3,464 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Undangan & WhatsApp Broadcast - Lukas & Kezia</title>
+  <title>Admin Portal Undangan & WhatsApp Broadcast - Lukas & Kezia</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
 
-  <div class="app-container">
-    <!-- Header -->
-    <header class="main-header glass">
-      <div class="brand-wrapper">
-        <div class="brand-icon">
-          <i class="fas fa-heart"></i>
-        </div>
-        <div class="brand-title">
-          <h1>Lukas & Kezia</h1>
-          <p>WhatsApp Sender & Guest Management System</p>
-        </div>
-      </div>
-
-      <!-- Navigation Tabs -->
-      <nav class="nav-tabs">
-        <button class="tab-btn active" data-tab="tab-guests">
-          <i class="fas fa-users"></i> Daftar Tamu
-        </button>
-        <button class="tab-btn" data-tab="tab-templates">
-          <i class="fas fa-comment-alt"></i> Template Pesan
-        </button>
-        <button class="tab-btn" data-tab="tab-wishes">
-          <i class="fas fa-envelope-open-text"></i> Ucapan Masuk
-        </button>
-      </nav>
-
-      <!-- Global Actions -->
-      <div class="header-actions">
-        <button class="btn-primary" onclick="openAddModal()">
-          <i class="fas fa-plus"></i> Tambah Tamu
-        </button>
-        <button class="btn-secondary" id="btn-refresh" onclick="refreshData()">
-          <i class="fas fa-sync-alt"></i> Tarik Data
-        </button>
-      </div>
-    </header>
-
-    <!-- Stats Dashboard Overview -->
-    <section class="stats-grid">
-      <div class="stat-card glass">
-        <div class="stat-icon green"><i class="fas fa-users"></i></div>
-        <div class="stat-info">
-          <span class="stat-label">Total Tamu</span>
-          <span class="stat-value" id="stat-total">0</span>
-        </div>
-      </div>
-      <div class="stat-card glass">
-        <div class="stat-icon blue"><i class="fas fa-envelope-open"></i></div>
-        <div class="stat-info">
-          <span class="stat-label">Tipe Undangan</span>
-          <span class="stat-value" id="stat-undangan">0</span>
-        </div>
-      </div>
-      <div class="stat-card glass">
-        <div class="stat-icon terracotta"><i class="fas fa-bullhorn"></i></div>
-        <div class="stat-info">
-          <span class="stat-label">Tipe Pengumuman</span>
-          <span class="stat-value" id="stat-pengumuman">0</span>
-        </div>
-      </div>
-      <div class="stat-card glass">
-        <div class="stat-icon yellow"><i class="fas fa-hourglass-half"></i></div>
-        <div class="stat-info">
-          <span class="stat-label">Belum Terkirim</span>
-          <span class="stat-value" id="stat-pending">0</span>
-        </div>
-      </div>
-      <div class="stat-card glass">
-        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
-        <div class="stat-info">
-          <span class="stat-label">Terkirim</span>
-          <span class="stat-value" id="stat-sent">0</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Progress Card -->
-    <div class="progress-card glass">
-      <div class="progress-header">
-        <span>Progress Pengiriman Undangan WhatsApp</span>
-        <span id="progress-percentage">0%</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-bar" style="width: 0%;"></div>
-      </div>
-    </div>
-
-    <!-- TAB 1: DAFTAR TAMU -->
-    <main id="tab-guests" class="tab-content" style="display: block;">
-      <!-- Filter Bar -->
-      <section class="filter-card glass" style="margin-bottom: 16px;">
-        <div class="filter-grid">
-          <div>
-            <input type="text" id="filter-search" class="input-box" placeholder="🔍 Cari nama atau nomor HP...">
+  <div class="admin-layout">
+    <!-- ============================================================
+         SIDEBAR NAVIGATION
+         ============================================================ -->
+    <aside class="admin-sidebar glass" id="admin-sidebar">
+      <div>
+        <div class="sidebar-brand">
+          <div class="brand-icon">
+            <i class="fas fa-heart"></i>
           </div>
-          <div>
-            <select id="filter-type" class="select-box">
-              <option value="all">Semua Tipe</option>
-              <option value="undangan">Undangan</option>
-              <option value="pengumuman">Pengumuman</option>
-            </select>
-          </div>
-          <div>
-            <select id="filter-sender" class="select-box">
-              <option value="all">Semua Pihak</option>
-              <option value="Lukas">Lukas</option>
-              <option value="Bapak Lukas">Bapak Lukas</option>
-              <option value="Kezia">Kezia</option>
-              <option value="Papa Kezia">Papa Kezia</option>
-              <option value="Mama Kezia">Mama Kezia</option>
-            </select>
-          </div>
-          <div>
-            <select id="filter-relation" class="select-box">
-              <option value="all">Semua Relasi</option>
-              <option value="Keluarga / Saudara">Keluarga / Saudara</option>
-              <option value="Teman Sekolah">Teman Sekolah</option>
-              <option value="Teman Kuliah">Teman Kuliah</option>
-              <option value="Teman Kerja / Rekan Bisnis">Teman Kerja / Rekan Bisnis</option>
-              <option value="Jemaat / Pelayanan Gereja">Jemaat / Pelayanan Gereja</option>
-              <option value="Sahabat Dekat">Sahabat Dekat</option>
-              <option value="Lainnya">Lainnya</option>
-            </select>
-          </div>
-          <div>
-            <select id="filter-status" class="select-box">
-              <option value="all">Semua Status</option>
-              <option value="pending">Pending</option>
-              <option value="terkirim">Terkirim</option>
-            </select>
-          </div>
-        </div>
-      </section>
-
-      <!-- Contacts Table Card -->
-      <section class="table-card glass">
-        <div class="table-toolbar">
-          <h2 style="font-size: 1.15rem; color: var(--primary);">Daftar Kontak Tamu Undangan</h2>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
-            <button class="btn-secondary" onclick="document.getElementById('csv-file-input').click()">
-              <i class="fas fa-file-import"></i> Import CSV
-            </button>
-            <button class="btn-secondary" onclick="exportToCSV()">
-              <i class="fas fa-file-export"></i> Export CSV
-            </button>
-            <button class="btn-secondary" onclick="downloadCSVTemplate()" title="Unduh format template CSV">
-              <i class="fas fa-download"></i> Template CSV
-            </button>
-            <button class="btn-secondary" onclick="resetAllStatuses()" style="color: #c0392b;" title="Reset semua status pengiriman ke Pending">
-              <i class="fas fa-undo"></i> Reset Status
-            </button>
+          <div class="brand-title">
+            <h2>Lukas & Kezia</h2>
+            <span>Wedding Portal</span>
           </div>
         </div>
 
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th width="4%">No</th>
-                <th width="20%">Nama Tamu</th>
-                <th width="13%">No. WhatsApp</th>
-                <th width="10%">Tipe</th>
-                <th width="14%">Relasi</th>
-                <th width="10%">Pihak</th>
-                <th width="10%">Format Pesan</th>
-                <th width="9%">Link Undangan</th>
-                <th width="8%">Status</th>
-                <th width="12%" style="text-align: center;">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="guests-table-body">
-              <tr>
-                <td colspan="10" style="text-align: center; padding: 30px;">
-                  <i class="fas fa-spinner fa-spin"></i> Memuat data tamu...
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <nav class="sidebar-nav">
+          <button class="nav-item active" data-view="view-dashboard" onclick="switchView('view-dashboard', this)">
+            <i class="fas fa-chart-pie"></i>
+            <span>Dashboard</span>
+          </button>
+          <button class="nav-item" data-view="view-spreadsheet" onclick="switchView('view-spreadsheet', this)">
+            <i class="fas fa-table"></i>
+            <span>Data Tamu</span>
+          </button>
+          <button class="nav-item" data-view="view-messages" onclick="switchView('view-messages', this)">
+            <i class="fas fa-paper-plane"></i>
+            <span>Kirim Pesan</span>
+          </button>
+          <button class="nav-item" data-view="view-wishes" onclick="switchView('view-wishes', this)">
+            <i class="fas fa-envelope-open-text"></i>
+            <span>Doa Restu</span>
+            <span class="sidebar-wishes-badge" id="sidebar-wishes-badge">0</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="db-status-pill">
+          <span class="pulse-dot"></span>
+          <span>Supabase Terhubung</span>
         </div>
-      </section>
-    </main>
+      </div>
+    </aside>
 
-    <!-- TAB 2: TEMPLATE PESAN -->
-    <main id="tab-templates" class="tab-content" style="display: none;">
-      <div class="template-grid">
-        <!-- Editor Card -->
-        <section class="card glass template-card-inner">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 style="font-size: 1.2rem; color: var(--primary);">
-              <i class="fas fa-pen-nib"></i> Editor Template Pesan
-            </h2>
+    <!-- ============================================================
+         MAIN CONTENT AREA
+         ============================================================ -->
+    <div class="admin-main">
+      <!-- Top Navbar -->
+      <header class="top-navbar glass">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div class="mobile-toggle" onclick="toggleSidebarMobile()">
+            <i class="fas fa-bars"></i>
           </div>
-
-          <div class="form-group">
-            <label for="template-selector">Pilih Variasi Template Pesan:</label>
-            <select id="template-selector" class="select-box">
-              <option value="undangan_formal">1. Undangan Formal (Keluarga / Rekan Kerja Formal)</option>
-              <option value="undangan_santai">2. Undangan Santai (Teman Sebaya Lukas & Kezia)</option>
-              <option value="pengumuman_formal">3. Pengumuman Formal (Keluarga Jauh / Rekan Orang Tua)</option>
-              <option value="pengumuman_santai">4. Pengumuman Santai (Teman Lukas & Kezia)</option>
-            </select>
+          <div class="page-title-box">
+            <h1 id="top-title">Dashboard Analitik</h1>
+            <p id="top-subtitle">Visualisasi distribusi undangan, kuota pengundang, dan metrik kirim</p>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label>Sisipkan Variabel Otomatis (Klik untuk menyisipkan):</label>
-            <div class="template-placeholders">
-              <span class="tag-placeholder" onclick="insertPlaceholder('{Nama}')">{Nama}</span>
-              <span class="tag-placeholder" onclick="insertPlaceholder('{URL}')">{URL}</span>
-              <span class="tag-placeholder" onclick="insertPlaceholder('{Pihak}')">{Pihak}</span>
-              <span class="tag-placeholder" onclick="insertPlaceholder('{Relasi}')">{Relasi}</span>
+        <div class="top-actions">
+          <button class="btn-primary" onclick="openAddModal()">
+            <i class="fas fa-plus"></i> Tambah Tamu
+          </button>
+          <button class="btn-secondary" id="btn-refresh" onclick="refreshData()">
+            <i class="fas fa-sync-alt"></i> Tarik Data
+          </button>
+        </div>
+      </header>
+
+      <!-- ============================================================
+           VIEW 1: DASHBOARD ANALYTICS (Charts & KPI)
+           ============================================================ -->
+      <section id="view-dashboard" class="admin-view active">
+        <!-- ROW 1: Donut Chart + KPI Cards -->
+        <div class="dash-row-1">
+          <!-- Donut Chart Card -->
+          <div class="dash-chart-card glass">
+            <div class="dash-card-header">
+              <div>
+                <h3><i class="fas fa-chart-pie"></i> Proporsi Jenis Undangan</h3>
+                <span class="dash-sub">Undangan Digital vs Undangan Fisik vs Pengumuman Saja</span>
+              </div>
+            </div>
+
+            <div class="donut-chart-container">
+              <div class="chart-canvas-wrapper">
+                <canvas id="chart-invitation-donut"></canvas>
+              </div>
+              <div class="donut-legend" id="donut-legend-container">
+                <div class="legend-item" onclick="filterByChartType('undangan_digital')">
+                  <div class="legend-left">
+                    <span class="legend-dot digital"></span>
+                    <span>Undangan Digital</span>
+                  </div>
+                  <div>
+                    <span class="legend-val" id="legend-digital-count">0</span>
+                    <span class="legend-pct" id="legend-digital-pct">(0%)</span>
+                  </div>
+                </div>
+
+                <div class="legend-item" onclick="filterByChartType('undangan_fisik')">
+                  <div class="legend-left">
+                    <span class="legend-dot fisik"></span>
+                    <span>Undangan Fisik</span>
+                  </div>
+                  <div>
+                    <span class="legend-val" id="legend-fisik-count">0</span>
+                    <span class="legend-pct" id="legend-fisik-pct">(0%)</span>
+                  </div>
+                </div>
+
+                <div class="legend-item" onclick="filterByChartType('pengumuman')">
+                  <div class="legend-left">
+                    <span class="legend-dot pengumuman"></span>
+                    <span>Pengumuman Saja</span>
+                  </div>
+                  <div>
+                    <span class="legend-val" id="legend-pengumuman-count">0</span>
+                    <span class="legend-pct" id="legend-pengumuman-pct">(0%)</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="template-text">Isi Pesan WhatsApp:</label>
-            <textarea id="template-text" class="input-box" rows="14" style="resize: vertical; font-family: inherit; line-height: 1.5;"></textarea>
-          </div>
+          <!-- KPI Cards Grid -->
+          <div class="kpi-cards-grid">
+            <div class="kpi-card glass">
+              <div class="kpi-top">
+                <span class="kpi-label">Pesan Terkirim</span>
+                <div class="stat-icon green"><i class="fab fa-whatsapp"></i></div>
+              </div>
+              <div class="kpi-val" id="stat-sent">0</div>
+              <div class="kpi-sub">
+                <span id="stat-progress-pct" class="kpi-badge success">0%</span>
+                <span>telah terkirim</span>
+              </div>
+            </div>
 
-          <div style="display: flex; gap: 10px;">
-            <button class="btn-primary" onclick="saveTemplates()">
-              <i class="fas fa-save"></i> Simpan Template
-            </button>
-            <button class="btn-secondary" onclick="resetTemplates()">
-              <i class="fas fa-undo"></i> Kembalikan Default
-            </button>
-          </div>
-        </section>
+            <div class="kpi-card glass">
+              <div class="kpi-top">
+                <span class="kpi-label">Belum Terkirim</span>
+                <div class="stat-icon yellow"><i class="fas fa-hourglass-half"></i></div>
+              </div>
+              <div class="kpi-val" id="stat-pending">0</div>
+              <div class="kpi-sub">
+                <span class="kpi-badge warning">Pending</span>
+                <span>menunggu pengiriman</span>
+              </div>
+            </div>
 
-        <!-- Live Preview WhatsApp Chat Bubble -->
-        <section class="card glass template-card-inner">
-          <h2 style="font-size: 1.2rem; color: var(--primary);">
-            <i class="fab fa-whatsapp"></i> Pratinjau Tampilan Pesan WhatsApp
-          </h2>
-          <p style="font-size: 0.85rem; color: var(--text-muted);">
-            Tampilan persis seperti yang akan diterima oleh tamu di aplikasi WhatsApp mereka:
-          </p>
+            <div class="kpi-card glass">
+              <div class="kpi-top">
+                <span class="kpi-label">Total Tamu</span>
+                <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+              </div>
+              <div class="kpi-val" id="stat-total">0</div>
+              <div class="kpi-sub">
+                <span>Seluruh data di Supabase</span>
+              </div>
+            </div>
 
-          <div class="wa-preview-box">
-            <div class="wa-bubble" id="template-preview"></div>
+            <div class="kpi-card glass">
+              <div class="kpi-top">
+                <span class="kpi-label">Doa Restu Masuk</span>
+                <div class="stat-icon terracotta"><i class="fas fa-comments"></i></div>
+              </div>
+              <div class="kpi-val" id="stat-wishes-count">0</div>
+              <div class="kpi-sub">
+                <span>Ucapan dikirim via website</span>
+              </div>
+            </div>
           </div>
-        </section>
-      </div>
-    </main>
-
-    <!-- TAB 3: UCAPAN MASUK -->
-    <main id="tab-wishes" class="tab-content" style="display: none;">
-      <section class="card glass" style="padding: 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <div>
-            <h2 style="font-size: 1.25rem; color: var(--primary);">
-              <i class="fas fa-comments"></i> Doa Restu & Ucapan dari Tamu
-            </h2>
-            <p style="font-size: 0.88rem; color: var(--text-muted);">
-              Daftar ucapan yang dikirimkan oleh tamu undangan langsung melalui website.
-            </p>
-          </div>
-          <button class="btn-secondary" onclick="loadWishesAdmin()">
-            <i class="fas fa-sync-alt"></i> Refresh Ucapan
-          </button>
         </div>
 
-        <div class="wishes-grid" id="wishes-feed">
-          <div class="empty-state" style="grid-column: 1 / -1;">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Memuat ucapan...</p>
+        <!-- ROW 2: Stacked Bar Chart (Pihak Pengundang x Jenis Undangan) -->
+        <div class="dash-row-2">
+          <div class="dash-chart-card glass">
+            <div class="dash-card-header">
+              <div>
+                <h3><i class="fas fa-chart-bar"></i> Alokasi Tamu per Kategori Pengundang & Jenis Undangan</h3>
+                <span class="dash-sub">Rincian kuota tamu masing-masing pihak (Lukas, Kezia, Orang Tua) berdasarkan Digital, Fisik, dan Pengumuman</span>
+              </div>
+            </div>
+            <div class="stacked-bar-container">
+              <canvas id="chart-stacked-bar"></canvas>
+            </div>
           </div>
         </div>
       </section>
-    </main>
+
+      <!-- ============================================================
+           VIEW 2: DATA TAMU (SPREADSHEET GRID EDITOR)
+           ============================================================ -->
+      <section id="view-spreadsheet" class="admin-view">
+        <div class="card glass spreadsheet-card">
+          <div class="spreadsheet-toolbar">
+            <div class="spreadsheet-title-info">
+              <h2>
+                <i class="fas fa-table"></i> Spreadsheet Editor Tamu
+                <span id="sheet-dirty-badge" class="dirty-badge" style="display: none;">
+                  <i class="fas fa-exclamation-circle"></i> <span id="sheet-dirty-count">0</span> perubahan belum disimpan
+                </span>
+              </h2>
+              <p>Edit langsung data tamu pada sel tabel seperti Excel / Google Sheets. Tekan <strong>Ctrl + S</strong> untuk menyimpan.</p>
+            </div>
+
+            <div class="spreadsheet-actions">
+              <input type="text" id="sheet-filter" class="input-box" placeholder="🔍 Filter di tabel..." style="width: 170px; height: 36px; font-size: 0.85rem;" oninput="filterSpreadsheetRows()">
+              <button class="btn-secondary" onclick="addSpreadsheetRow(1)" title="Tambah 1 baris kosong">
+                <i class="fas fa-plus"></i> +1 Baris
+              </button>
+              <button class="btn-secondary" onclick="addSpreadsheetRow(5)" title="Tambah 5 baris kosong">
+                <i class="fas fa-plus-circle"></i> +5 Baris
+              </button>
+              <button class="btn-secondary" onclick="openPasteModal()" title="Tempel data teks dari Excel / Google Sheets">
+                <i class="fas fa-paste"></i> Paste dari Excel
+              </button>
+              <button class="btn-primary" id="btn-save-spreadsheet" onclick="saveAllSpreadsheetChanges()">
+                <i class="fas fa-save"></i> Simpan Semua (Ctrl+S)
+              </button>
+            </div>
+          </div>
+
+          <div class="spreadsheet-wrapper" id="spreadsheet-wrapper">
+            <table class="spreadsheet-table" id="spreadsheet-table">
+              <thead>
+                <tr>
+                  <th width="4%" style="text-align: center;">#</th>
+                  <th width="24%">Nama Tamu <span style="color:red;">*</span></th>
+                  <th width="16%">No. WhatsApp</th>
+                  <th width="14%">Kategori Undangan</th>
+                  <th width="18%">Relasi</th>
+                  <th width="14%">Pihak Pengundang</th>
+                  <th width="10%">Status Kirim</th>
+                  <th width="4%" style="text-align: center;">✕</th>
+                </tr>
+              </thead>
+              <tbody id="spreadsheet-tbody">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           VIEW 3: KIRIM PESAN & BROADCAST
+           ============================================================ -->
+      <section id="view-messages" class="admin-view">
+        <!-- Sub-tabs: Broadcast List vs Template Editor -->
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <button class="btn-secondary active" id="subtab-btn-list" onclick="switchMessagesSubTab('list')">
+            <i class="fas fa-list"></i> Daftar Penerima
+          </button>
+          <button class="btn-secondary" id="subtab-btn-templates" onclick="switchMessagesSubTab('templates')">
+            <i class="fas fa-comment-dots"></i> Template Pesan WhatsApp
+          </button>
+        </div>
+
+        <!-- Section 1: Daftar Penerima & Kirim WA -->
+        <div id="messages-sub-list">
+          <!-- Filter Bar -->
+          <section class="filter-card glass" style="margin-bottom: 16px;">
+            <div class="filter-grid">
+              <div>
+                <input type="text" id="filter-search" class="input-box" placeholder="🔍 Cari nama atau nomor HP...">
+              </div>
+              <div>
+                <select id="filter-type" class="select-box">
+                  <option value="all">Semua Kategori</option>
+                  <option value="undangan_digital">💌 Undangan Digital</option>
+                  <option value="undangan_fisik">📜 Undangan Fisik</option>
+                  <option value="pengumuman">📢 Pengumuman Saja</option>
+                </select>
+              </div>
+              <div>
+                <select id="filter-sender" class="select-box">
+                  <option value="all">Semua Pihak</option>
+                  <option value="Lukas">Lukas</option>
+                  <option value="Bapak Lukas">Bapak Lukas</option>
+                  <option value="Kezia">Kezia</option>
+                  <option value="Papa Kezia">Papa Kezia</option>
+                  <option value="Mama Kezia">Mama Kezia</option>
+                </select>
+              </div>
+              <div>
+                <select id="filter-relation" class="select-box">
+                  <option value="all">Semua Relasi</option>
+                  <option value="Keluarga / Saudara">Keluarga / Saudara</option>
+                  <option value="Teman Sekolah">Teman Sekolah</option>
+                  <option value="Teman Kuliah">Teman Kuliah</option>
+                  <option value="Teman Kerja / Rekan Bisnis">Teman Kerja / Rekan Bisnis</option>
+                  <option value="Jemaat / Pelayanan Gereja">Jemaat / Pelayanan Gereja</option>
+                  <option value="Sahabat Dekat">Sahabat Dekat</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+              </div>
+              <div>
+                <select id="filter-status" class="select-box">
+                  <option value="all">Semua Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="terkirim">Terkirim</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <!-- Table Card -->
+          <section class="table-card glass">
+            <div class="table-toolbar">
+              <h2 style="font-size: 1.15rem; color: var(--primary);">Daftar Kontak Penerima Pesan</h2>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+                <button class="btn-secondary" onclick="document.getElementById('csv-file-input').click()">
+                  <i class="fas fa-file-import"></i> Import CSV
+                </button>
+                <button class="btn-secondary" onclick="exportToCSV()">
+                  <i class="fas fa-file-export"></i> Export CSV
+                </button>
+                <button class="btn-secondary" onclick="downloadCSVTemplate()" title="Unduh format template CSV">
+                  <i class="fas fa-download"></i> Template CSV
+                </button>
+                <button class="btn-secondary" onclick="resetAllStatuses()" style="color: #c0392b;" title="Reset semua status pengiriman ke Pending">
+                  <i class="fas fa-undo"></i> Reset Status
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th width="4%">No</th>
+                    <th width="20%">Nama Tamu</th>
+                    <th width="13%">No. WhatsApp</th>
+                    <th width="10%">Kategori</th>
+                    <th width="14%">Relasi</th>
+                    <th width="10%">Pihak</th>
+                    <th width="10%">Format Pesan</th>
+                    <th width="9%">Link Undangan</th>
+                    <th width="8%">Status</th>
+                    <th width="12%" style="text-align: center;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="guests-table-body">
+                  <tr>
+                    <td colspan="10" style="text-align: center; padding: 30px;">
+                      <i class="fas fa-spinner fa-spin"></i> Memuat data tamu...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <!-- Section 2: Editor Template Pesan -->
+        <div id="messages-sub-templates" style="display: none;">
+          <div class="template-grid">
+            <section class="card glass template-card-inner">
+              <h2 style="font-size: 1.2rem; color: var(--primary);">
+                <i class="fas fa-pen-nib"></i> Editor Template Pesan WhatsApp
+              </h2>
+
+              <div class="form-group">
+                <label for="template-selector">Pilih Variasi Template Pesan:</label>
+                <select id="template-selector" class="select-box">
+                  <option value="undangan_formal">1. Undangan Formal (Keluarga / Rekan Kerja Formal)</option>
+                  <option value="undangan_santai">2. Undangan Santai (Teman Sebaya Lukas & Kezia)</option>
+                  <option value="pengumuman_formal">3. Pengumuman Formal (Keluarga Jauh / Rekan Orang Tua)</option>
+                  <option value="pengumuman_santai">4. Pengumuman Santai (Teman Lukas & Kezia)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Sisipkan Variabel Otomatis (Klik untuk menyisipkan):</label>
+                <div class="template-placeholders">
+                  <span class="tag-placeholder" onclick="insertPlaceholder('{Nama}')">{Nama}</span>
+                  <span class="tag-placeholder" onclick="insertPlaceholder('{URL}')">{URL}</span>
+                  <span class="tag-placeholder" onclick="insertPlaceholder('{Pihak}')">{Pihak}</span>
+                  <span class="tag-placeholder" onclick="insertPlaceholder('{Relasi}')">{Relasi}</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="template-text">Isi Pesan WhatsApp:</label>
+                <textarea id="template-text" class="input-box" rows="14" style="resize: vertical; font-family: inherit; line-height: 1.5;"></textarea>
+              </div>
+
+              <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" onclick="saveTemplates()">
+                  <i class="fas fa-save"></i> Simpan Template
+                </button>
+                <button class="btn-secondary" onclick="resetTemplates()">
+                  <i class="fas fa-undo"></i> Kembalikan Default
+                </button>
+              </div>
+            </section>
+
+            <section class="card glass template-card-inner">
+              <h2 style="font-size: 1.2rem; color: var(--primary);">
+                <i class="fab fa-whatsapp"></i> Pratinjau Tampilan WhatsApp
+              </h2>
+              <p style="font-size: 0.85rem; color: var(--text-muted);">
+                Tampilan persis seperti yang akan diterima oleh tamu di aplikasi WhatsApp mereka:
+              </p>
+              <div class="wa-preview-box">
+                <div class="wa-bubble" id="template-preview"></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           VIEW 4: DOA RESTU MASUK
+           ============================================================ -->
+      <section id="view-wishes" class="admin-view">
+        <section class="card glass" style="padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+              <h2 style="font-size: 1.25rem; color: var(--primary);">
+                <i class="fas fa-comments"></i> Doa Restu & Ucapan dari Tamu
+              </h2>
+              <p style="font-size: 0.88rem; color: var(--text-muted);">
+                Daftar ucapan yang dikirimkan oleh tamu undangan langsung melalui website.
+              </p>
+            </div>
+            <button class="btn-secondary" onclick="loadWishesAdmin()">
+              <i class="fas fa-sync-alt"></i> Refresh Ucapan
+            </button>
+          </div>
+
+          <div class="wishes-grid" id="wishes-feed">
+            <div class="empty-state" style="grid-column: 1 / -1;">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Memuat ucapan...</p>
+            </div>
+          </div>
+        </section>
+      </section>
+    </div>
   </div>
 
   <!-- MODAL: TAMBAH / EDIT TAMU -->
@@ -310,10 +487,11 @@
           </div>
 
           <div class="form-group">
-            <label for="guest-type">Tipe Undangan <span style="color:red;">*</span></label>
+            <label for="guest-type">Kategori Undangan <span style="color:red;">*</span></label>
             <select id="guest-type" class="select-box" required>
-              <option value="undangan">💌 Undangan (Akses Penuh: Resepsi & Kado)</option>
-              <option value="pengumuman">📢 Pengumuman (Pemberkatan & Doa Restu Saja)</option>
+              <option value="undangan_digital">💌 Undangan Digital (Akses Penuh Web & WA)</option>
+              <option value="undangan_fisik">📜 Undangan Fisik (Kartu Cetak Resmi)</option>
+              <option value="pengumuman">📢 Pengumuman Saja (Pemberkatan & Doa Restu)</option>
             </select>
           </div>
 
@@ -354,6 +532,29 @@
           <button type="submit" id="btn-submit-guest" class="btn-primary">Simpan Data</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: PASTE DARI EXCEL -->
+  <div class="modal-overlay" id="modal-paste">
+    <div class="modal-box" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-paste"></i> Paste Data dari Excel / Google Sheets</h3>
+        <button class="btn-icon-sm" onclick="closePasteModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: #555; line-height: 1.5;">
+          Salin (Copy) sel dari Excel atau Google Sheets, lalu tempel (Paste) di kotak berikut.
+          Sistem otomatis mendeteksi: <strong>Kolom 1: Nama</strong>, <strong>Kolom 2: No HP / Relasi</strong>.
+        </p>
+        <textarea id="paste-input" class="paste-box" placeholder="Contoh salinan dari Excel:&#10;Budi Santoso&#9;08123456789&#10;Mas Aan&#9;08198765432&#10;Budhe Harti&#9;08512345678"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closePasteModal()">Batal</button>
+        <button class="btn-primary" onclick="processPastedText()">Masukkan ke Spreadsheet</button>
+      </div>
     </div>
   </div>
 
