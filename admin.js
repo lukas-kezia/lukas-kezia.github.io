@@ -21,6 +21,7 @@ let wishes = [];
 let editingGuestId = null;
 let donutChartInstance = null;
 let stackedBarChartInstance = null;
+let chartMode = "pax"; // "pax" atau "count"
 
 // Template Preset Defaults
 const DEFAULT_TEMPLATES = {
@@ -152,6 +153,7 @@ function updatePreview() {
 
   let text = textarea.value;
   text = text.replace(/{Nama}|{nama}/g, dummyName);
+  text = text.replace(/{Pax}|{pax}/g, "2");
   text = text.replace(/{URL}|{url}/g, dummyUrl);
   text = text.replace(/{Pihak}|{pihak}/g, "Lukas");
   text = text.replace(/{Relasi}|{relasi}/g, "Keluarga / Saudara");
@@ -177,9 +179,11 @@ function compileMessageForGuest(guest, templateKeyOverride = null) {
   const key = templateKeyOverride || getSmartTemplateKey(guest);
   const rawTemplate = currentTemplates[key] || DEFAULT_TEMPLATES[key] || DEFAULT_TEMPLATES.undangan_formal;
   const inviteUrl = createSafeInviteUrl(guest.name);
+  const paxStr = (guest.pax || 1).toString();
 
   let message = rawTemplate;
   message = message.replace(/{Nama}|{nama}/g, guest.name);
+  message = message.replace(/{Pax}|{pax}/g, paxStr);
   message = message.replace(/{URL}|{url}/g, inviteUrl);
   message = message.replace(/{Pihak}|{pihak}/g, guest.sender || "Lukas & Kezia");
   message = message.replace(/{Relasi}|{relasi}/g, guest.relation || "");
@@ -296,6 +300,10 @@ function renderTable() {
     }[smartKey] || "Formal";
 
     const inviteLink = createSafeInviteUrl(g.name);
+    const pax = parseInt(g.pax, 10) || 1;
+    const paxBadge = pax > 1
+      ? `<span class="badge badge-pax-group" title="${pax} Pax (Grup/Keluarga)">${pax} Pax</span>`
+      : `<span class="badge badge-pax" title="1 Pax (Personal)">1 Pax</span>`;
 
     return `
       <tr data-id="${g.id}">
@@ -306,6 +314,7 @@ function renderTable() {
         <td>
           <span style="font-family: monospace; color: #444;">${g.phone ? g.phone : '<span style="color:#aaa;">-</span>'}</span>
         </td>
+        <td style="text-align: center;">${paxBadge}</td>
         <td>${typeBadge}</td>
         <td>
           <span style="font-size: 0.85rem; color: #555;">${escapeHtml(g.relation || "-")}</span>
@@ -389,17 +398,43 @@ function copyGuestLink(rawOrEncodedName) {
   });
 }
 
+// Toggle Mode Hitung Chart (Pax vs Kontak)
+function setChartMode(mode) {
+  chartMode = mode;
+  const btnPax = document.getElementById("btn-chart-mode-pax");
+  const btnCount = document.getElementById("btn-chart-mode-count");
+  if (btnPax) btnPax.classList.toggle("active", mode === "pax");
+  if (btnCount) btnCount.classList.toggle("active", mode === "count");
+  updateStats();
+}
+
 // Update Statistik & Dashboard
 function updateStats() {
   const total = guests.length;
   const sent = guests.filter(g => g.status === "terkirim").length;
   const pending = total - sent;
+
+  // Hitung Pax
+  const totalPax = guests.reduce((sum, g) => sum + (parseInt(g.pax, 10) || 1), 0);
+  const digitalPax = guests.filter(g => g.type === "undangan_digital" || g.type === "undangan" || !g.type)
+                           .reduce((sum, g) => sum + (parseInt(g.pax, 10) || 1), 0);
+  const fisikPax = guests.filter(g => g.type === "undangan_fisik")
+                         .reduce((sum, g) => sum + (parseInt(g.pax, 10) || 1), 0);
+  const pengumumanPax = guests.filter(g => g.type === "pengumuman")
+                              .reduce((sum, g) => sum + (parseInt(g.pax, 10) || 1), 0);
+  const resepsiPax = digitalPax + fisikPax;
+
+  // Hitung Undangan (Baris Kontak)
   const digital = guests.filter(g => g.type === "undangan_digital" || g.type === "undangan" || !g.type).length;
   const fisik = guests.filter(g => g.type === "undangan_fisik").length;
   const pengumuman = guests.filter(g => g.type === "pengumuman").length;
 
+  // Update KPI Cards
   const statTotal = document.getElementById("stat-total");
   if (statTotal) statTotal.textContent = total;
+
+  const statTotalPax = document.getElementById("stat-total-pax");
+  if (statTotalPax) statTotalPax.textContent = totalPax + " Pax";
 
   const statSent = document.getElementById("stat-sent");
   if (statSent) statSent.textContent = sent;
@@ -417,23 +452,39 @@ function updateStats() {
   const sidebarBadge = document.getElementById("sidebar-wishes-badge");
   if (sidebarBadge) sidebarBadge.textContent = wishes.length;
 
+  // Update Rekap Banner Pax Katering & Kursi
+  const elRecapTotal = document.getElementById("recap-total-pax");
+  if (elRecapTotal) elRecapTotal.textContent = totalPax + " Pax";
+
+  const elRecapResepsi = document.getElementById("recap-pax-resepsi");
+  if (elRecapResepsi) elRecapResepsi.textContent = resepsiPax + " Pax";
+
+  const elRecapFisik = document.getElementById("recap-pax-fisik");
+  if (elRecapFisik) elRecapFisik.textContent = fisikPax + " Pax";
+
+  const elRecapDigital = document.getElementById("recap-pax-digital");
+  if (elRecapDigital) elRecapDigital.textContent = digitalPax + " Pax";
+
+  const elRecapPengumuman = document.getElementById("recap-pax-pengumuman");
+  if (elRecapPengumuman) elRecapPengumuman.textContent = pengumumanPax + " Pax";
+
   // Update Legenda Donut
   const digitalPct = total > 0 ? Math.round((digital / total) * 100) : 0;
   const fisikPct = total > 0 ? Math.round((fisik / total) * 100) : 0;
   const pengumumanPct = total > 0 ? Math.round((pengumuman / total) * 100) : 0;
 
   const elDigCount = document.getElementById("legend-digital-count");
-  if (elDigCount) elDigCount.textContent = digital;
+  if (elDigCount) elDigCount.textContent = `${digital} (${digitalPax}p)`;
   const elDigPct = document.getElementById("legend-digital-pct");
   if (elDigPct) elDigPct.textContent = `(${digitalPct}%)`;
 
   const elFisCount = document.getElementById("legend-fisik-count");
-  if (elFisCount) elFisCount.textContent = fisik;
+  if (elFisCount) elFisCount.textContent = `${fisik} (${fisikPax}p)`;
   const elFisPct = document.getElementById("legend-fisik-pct");
   if (elFisPct) elFisPct.textContent = `(${fisikPct}%)`;
 
   const elPengCount = document.getElementById("legend-pengumuman-count");
-  if (elPengCount) elPengCount.textContent = pengumuman;
+  if (elPengCount) elPengCount.textContent = `${pengumuman} (${pengumumanPax}p)`;
   const elPengPct = document.getElementById("legend-pengumuman-pct");
   if (elPengPct) elPengPct.textContent = `(${pengumumanPct}%)`;
 
@@ -495,13 +546,16 @@ function updateDashboardCharts(digital, fisik, pengumuman) {
 
     const senders = ["Lukas", "Bapak Lukas", "Kezia", "Papa Kezia", "Mama Kezia"];
     const digitalPerSender = senders.map(s =>
-      guests.filter(g => g.sender === s && (g.type === "undangan_digital" || g.type === "undangan" || !g.type)).length
+      guests.filter(g => g.sender === s && (g.type === "undangan_digital" || g.type === "undangan" || !g.type))
+            .reduce((sum, g) => sum + (chartMode === "pax" ? (parseInt(g.pax, 10) || 1) : 1), 0)
     );
     const fisikPerSender = senders.map(s =>
-      guests.filter(g => g.sender === s && g.type === "undangan_fisik").length
+      guests.filter(g => g.sender === s && g.type === "undangan_fisik")
+            .reduce((sum, g) => sum + (chartMode === "pax" ? (parseInt(g.pax, 10) || 1) : 1), 0)
     );
     const pengumumanPerSender = senders.map(s =>
-      guests.filter(g => g.sender === s && g.type === "pengumuman").length
+      guests.filter(g => g.sender === s && g.type === "pengumuman")
+            .reduce((sum, g) => sum + (chartMode === "pax" ? (parseInt(g.pax, 10) || 1) : 1), 0)
     );
 
     const ctxBar = canvasBar.getContext("2d");
@@ -547,7 +601,7 @@ function updateDashboardCharts(digital, fisik, pengumuman) {
             beginAtZero: true,
             grid: { color: "rgba(59, 93, 59, 0.08)" },
             ticks: {
-              stepSize: 5,
+              stepSize: chartMode === "pax" ? 10 : 5,
               font: { family: "'Plus Jakarta Sans', sans-serif" },
               color: "#5e705e"
             }
@@ -565,7 +619,12 @@ function updateDashboardCharts(digital, fisik, pengumuman) {
           },
           tooltip: {
             mode: "index",
-            intersect: false
+            intersect: false,
+            callbacks: {
+              label: function(ctx) {
+                return ` ${ctx.dataset.label}: ${ctx.raw} ${chartMode === "pax" ? "Pax" : "Kontak"}`;
+              }
+            }
           }
         }
       }
@@ -700,6 +759,8 @@ function openAddModal() {
   editingGuestId = null;
   document.getElementById("modal-guest-title").textContent = "Tambah Tamu Baru";
   document.getElementById("guest-form").reset();
+  const paxEl = document.getElementById("guest-pax");
+  if (paxEl) paxEl.value = "1";
   document.getElementById("guest-status").value = "pending";
   document.getElementById("modal-guest").classList.add("active");
 }
@@ -712,6 +773,8 @@ function openEditModal(id) {
   document.getElementById("modal-guest-title").textContent = "Edit Data Tamu";
   document.getElementById("guest-name").value = guest.name || "";
   document.getElementById("guest-phone").value = guest.phone || "";
+  const paxEl = document.getElementById("guest-pax");
+  if (paxEl) paxEl.value = (guest.pax || 1).toString();
   document.getElementById("guest-type").value = (guest.type === "undangan" ? "undangan_digital" : (guest.type || "undangan_digital"));
   document.getElementById("guest-relation").value = guest.relation || "Lainnya";
   document.getElementById("guest-sender").value = guest.sender || "Lukas";
@@ -729,6 +792,7 @@ async function handleSaveGuest(e) {
   const name = document.getElementById("guest-name").value.trim();
   const rawPhone = document.getElementById("guest-phone").value.trim();
   const phone = formatPhoneNumber(rawPhone);
+  const pax = parseInt(document.getElementById("guest-pax")?.value || "1", 10) || 1;
   const type = document.getElementById("guest-type").value;
   const relation = document.getElementById("guest-relation").value;
   const sender = document.getElementById("guest-sender").value;
@@ -742,6 +806,7 @@ async function handleSaveGuest(e) {
   const payload = {
     name,
     phone,
+    pax,
     type,
     relation,
     sender,
@@ -807,11 +872,12 @@ function exportToCSV() {
     return;
   }
 
-  const headers = ["Nama Tamu", "Nomor WhatsApp", "Tipe", "Relasi", "Pihak Pengundang", "Status", "Link Undangan"];
+  const headers = ["Nama Tamu", "Nomor WhatsApp", "Pax", "Kategori", "Relasi", "Pihak Pengundang", "Status", "Link Undangan"];
   const rows = guests.map(g => [
     `"${(g.name || '').replace(/"/g, '""')}"`,
     `"${g.phone || ''}"`,
-    `"${g.type || 'undangan'}"`,
+    `"${parseInt(g.pax, 10) || 1}"`,
+    `"${g.type || 'undangan_digital'}"`,
     `"${g.relation || ''}"`,
     `"${g.sender || ''}"`,
     `"${g.status || 'pending'}"`,
@@ -831,11 +897,12 @@ function exportToCSV() {
 
 // Download CSV Template
 function downloadCSVTemplate() {
-  const headers = ["Nama Tamu", "Nomor WhatsApp", "Tipe (undangan/pengumuman)", "Relasi", "Pihak (Lukas/Bapak Lukas/Kezia/Papa Kezia/Mama Kezia)"];
+  const headers = ["Nama Tamu", "Nomor WhatsApp", "Pax", "Kategori (undangan_digital/undangan_fisik/pengumuman)", "Relasi", "Pihak (Lukas/Bapak Lukas/Kezia/Papa Kezia/Mama Kezia)"];
   const sample = [
-    `"Budi Santoso","081234567890","undangan","Teman Sekolah","Lukas"`,
-    `"Keluarga Bpk. Handoko","081987654321","undangan","Keluarga / Saudara","Bapak Lukas"`,
-    `"Rina Wijaya","08512345678","pengumuman","Teman Kuliah","Kezia"`
+    `"Budi Santoso","081234567890","1","undangan_digital","Teman Sekolah","Lukas"`,
+    `"Teman Sekolah SMP N 1","081987654321","10","undangan_digital","Teman Sekolah","Lukas"`,
+    `"Keluarga Bpk. Handoko","081987654321","4","undangan_fisik","Keluarga / Saudara","Bapak Lukas"`,
+    `"Rina Wijaya","08512345678","1","pengumuman","Teman Kuliah","Kezia"`
   ];
 
   const content = "\uFEFF" + [headers.join(","), ...sample].join("\r\n");
@@ -863,19 +930,35 @@ async function importFromCSV(file) {
     let addedCount = 0;
     // Lewati baris 0 (header)
     for (let i = 1; i < lines.length; i++) {
-      const parts = parseCSVLine(lines[i]);
       if (parts.length >= 1 && parts[0].trim() !== "") {
         const name = parts[0].trim();
         const phone = formatPhoneNumber(parts[1] || "");
-        const rawType = (parts[2] || "").toLowerCase().trim();
-        const type = rawType.includes("pengumuman") ? "pengumuman" : "undangan";
-        const relation = parts[3] ? parts[3].trim() : "Lainnya";
-        const sender = parts[4] ? parts[4].trim() : "Lukas";
+        let pax = 1;
+        let typeCol = parts[2] || "";
+        let relationCol = parts[3] || "";
+        let senderCol = parts[4] || "";
+
+        // Jika kolom ke-3 adalah angka (pax)
+        if (/^\d+$/.test(typeCol.trim())) {
+          pax = parseInt(typeCol.trim(), 10) || 1;
+          typeCol = parts[3] || "";
+          relationCol = parts[4] || "";
+          senderCol = parts[5] || "";
+        }
+
+        const rawType = typeCol.toLowerCase().trim();
+        let type = "undangan_digital";
+        if (rawType.includes("pengumuman")) type = "pengumuman";
+        else if (rawType.includes("fisik")) type = "undangan_fisik";
+
+        const relation = relationCol ? relationCol.trim() : "Lainnya";
+        const sender = senderCol ? senderCol.trim() : "Lukas";
 
         try {
           await GuestsAPI.create({
             name,
             phone,
+            pax,
             type,
             relation,
             sender,
@@ -1045,6 +1128,7 @@ function loadSpreadsheetFromGuests() {
     id: g.id,
     name: g.name || "",
     phone: g.phone || "",
+    pax: parseInt(g.pax, 10) || 1,
     type: (g.type === "undangan" ? "undangan_digital" : (g.type || "undangan_digital")),
     relation: g.relation || "Lainnya",
     sender: g.sender || "Lukas",
@@ -1068,6 +1152,14 @@ function renderSpreadsheetTable() {
   const filterSender = document.getElementById("sheet-filter-sender")?.value || "all";
   const filterStatus = document.getElementById("sheet-filter-status")?.value || "all";
   const sheetSort = document.getElementById("sheet-sort")?.value || "created_asc";
+
+  // Hitung live recap pax dan kontak di spreadsheet
+  const totalPaxInSheet = spreadsheetData.reduce((s, r) => s + (parseInt(r.pax, 10) || 1), 0);
+  const totalCountInSheet = spreadsheetData.length;
+  const badgePax = document.getElementById("sheet-summary-pax");
+  const badgeCount = document.getElementById("sheet-summary-count");
+  if (badgePax) badgePax.textContent = totalPaxInSheet;
+  if (badgeCount) badgeCount.textContent = totalCountInSheet;
 
   let filtered = spreadsheetData.filter(row => {
     const matchSearch = !filterText || (
@@ -1102,7 +1194,7 @@ function renderSpreadsheetTable() {
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" style="text-align: center; padding: 40px; color: #888;">
+        <td colspan="9" style="text-align: center; padding: 40px; color: #888;">
           <i class="fas fa-table" style="font-size: 32px; color: #bbb; margin-bottom: 10px; display: block;"></i>
           ${spreadsheetData.length === 0 ? 'Belum ada baris data. Klik <strong>+1 Baris</strong> atau <strong>Paste dari Excel</strong> untuk memulai.' : 'Tidak ada data tamu yang cocok dengan filter.'}
         </td>
@@ -1114,6 +1206,7 @@ function renderSpreadsheetTable() {
   tbody.innerHTML = filtered.map((row, idx) => {
     const isDirty = dirtyRowIds.has(row.id);
     const rowClass = row.isNew ? "is-new" : (isDirty ? "is-dirty" : "");
+    const paxVal = parseInt(row.pax, 10) || 1;
 
     return `
       <tr class="${rowClass}" data-row-id="${row.id}">
@@ -1130,6 +1223,13 @@ function renderSpreadsheetTable() {
             oninput="onSheetCellInput('${row.id}', 'phone', this.value)"
             onchange="onSheetPhoneBlur('${row.id}', this)"
             onkeydown="handleSheetKeyNav(event, ${idx}, 'phone')">
+        </td>
+        <td style="text-align: center;">
+          <input type="number" min="1" class="sheet-input sheet-input-pax" value="${paxVal}"
+            style="text-align: center; font-weight: 700; width: 100%; color: var(--primary);"
+            title="Jumlah orang / pax untuk rekap (misal 1, 2, atau 10 untuk teman sekolah)"
+            oninput="onSheetCellInput('${row.id}', 'pax', this.value)"
+            onkeydown="handleSheetKeyNav(event, ${idx}, 'pax')">
         </td>
         <td>
           <select class="sheet-select" onchange="onSheetCellInput('${row.id}', 'type', this.value)">
@@ -1174,7 +1274,16 @@ function onSheetCellInput(rowId, field, value) {
   const row = spreadsheetData.find(r => r.id === rowId);
   if (!row) return;
 
-  row[field] = value;
+  if (field === "pax") {
+    row.pax = parseInt(value, 10) || 1;
+    const badgePax = document.getElementById("sheet-summary-pax");
+    if (badgePax) {
+      badgePax.textContent = spreadsheetData.reduce((s, r) => s + (parseInt(r.pax, 10) || 1), 0);
+    }
+  } else {
+    row[field] = value;
+  }
+
   dirtyRowIds.add(rowId);
 
   // Tandai visual baris
@@ -1216,6 +1325,7 @@ function addSpreadsheetRow(count = 1, focusNew = false) {
       id: tempId,
       name: "",
       phone: "",
+      pax: 1,
       type: "undangan_digital",
       relation: "Lainnya",
       sender: "Lukas",
@@ -1321,6 +1431,7 @@ async function saveAllSpreadsheetChanges() {
       const payload = {
         name: row.name.trim(),
         phone: formatPhoneNumber(row.phone),
+        pax: parseInt(row.pax, 10) || 1,
         type: row.type,
         relation: row.relation,
         sender: row.sender,
@@ -1381,20 +1492,29 @@ function processPastedText() {
       const col2 = parts[1] ? parts[1].trim() : "";
       const col3 = parts[2] ? parts[2].trim() : "";
 
-      // Deteksi otomatis jika kolom 2 adalah No HP atau Relasi
+      // Deteksi otomatis jika kolom 2 adalah No HP atau Relasi atau Pax
       let phone = "";
       let relation = "Lainnya";
       let sender = "Lukas";
+      let pax = 1;
+      const col4 = parts[3] ? parts[3].trim() : "";
+
+      // Cek apakah ada kolom angka 1-500 sebagai pax
+      [col2, col3, col4].forEach(c => {
+        if (/^\d{1,3}$/.test(c) && parseInt(c, 10) > 0 && parseInt(c, 10) <= 500) {
+          pax = parseInt(c, 10);
+        }
+      });
 
       if (/^\+?[\d\s-]{6,}$/.test(col2)) {
         phone = formatPhoneNumber(col2);
-        if (col3) relation = col3;
-      } else if (col2) {
+        if (col3 && !/^\d{1,3}$/.test(col3)) relation = col3;
+      } else if (col2 && !/^\d{1,3}$/.test(col2)) {
         relation = col2;
       }
 
       // Deteksi pihak pengundang berdasarkan teks relasi
-      const relLower = (relation + " " + col3).toLowerCase();
+      const relLower = (relation + " " + col3 + " " + col4).toLowerCase();
       if (relLower.includes("bapak") || relLower.includes("bapake")) sender = "Bapak Lukas";
       else if (relLower.includes("papa")) sender = "Papa Kezia";
       else if (relLower.includes("mama")) sender = "Mama Kezia";
@@ -1405,7 +1525,8 @@ function processPastedText() {
         id: tempId,
         name,
         phone,
-        type: "undangan",
+        pax,
+        type: "undangan_digital",
         relation,
         sender,
         status: "pending",

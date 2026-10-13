@@ -58,6 +58,10 @@ Aplikasi dilengkapi dengan panel admin modern bertema *Sage Green Luxury Glassmo
     2. **Data Tamu:** Spreadsheet Grid Editor untuk input dan pengeditan cepat bergaya Excel serta copy-paste massal.
     3. **Kirim Pesan:** Tabel broadcast WhatsApp dengan 1-klik kirim, penyaringan multi-kategori, dan editor template pesan.
     4. **Doa Restu:** Feed live ucapan selamat dan doa restu yang masuk dari tamu via website (dengan badge counter).
+* **Rekap Kuota Pax & Katering:**
+  * Setiap data tamu memiliki kolom **Pax** (jumlah orang, default: 1).
+  * Sangat berguna untuk undangan grup seperti teman sekolah, teman kerja, atau keluarga besar yang diundang dalam satu nama kontak tetapi mewakili banyak kursi/porsi katering (misal: 10 atau 15 pax).
+  * Dashboard menghitung otomatis: Total Estimasi Pax, Pax Resepsi (Katering fisik + digital), Pax Pengumuman, dan toggle grafik Stacked Bar Chart per Pihak Pengundang (Hitung Pax vs Hitung Kontak).
 * **3 Kategori Undangan:**
   * `undangan_digital` (Undangan Digital - Akses penuh web & WA)
   * `undangan_fisik` (Undangan Fisik - Kartu cetak resmi)
@@ -75,6 +79,7 @@ create table public.guests (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   phone text,
+  pax integer not null default 1,
   type text not null default 'undangan_digital' check (type in ('undangan_digital', 'undangan_fisik', 'pengumuman', 'undangan')),
   relation text not null default 'Lainnya',
   sender text not null default 'Lukas',
@@ -85,7 +90,11 @@ create table public.guests (
 
 create index idx_guests_name_lower on public.guests (lower(name));
 
--- JIKA TABEL SUDAH DIBUAT SEBELUMNYA, PERBARUI CHECK CONSTRAINT UNTUK 3 KATEGORI:
+-- JIKA TABEL SUDAH DIBUAT SEBELUMNYA, JALANKAN PERINTAH ALTER BERIKUT:
+-- 1. Tambah kolom pax
+alter table public.guests add column if not exists pax integer default 1;
+
+-- 2. Perbarui check constraint untuk 3 kategori
 alter table public.guests drop constraint if exists guests_type_check;
 alter table public.guests add constraint guests_type_check 
   check (type in ('undangan_digital', 'undangan_fisik', 'pengumuman', 'undangan'));

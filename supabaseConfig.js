@@ -117,11 +117,25 @@ const GuestsAPI = {
       return newGuest;
     }
 
-    const result = await supabaseRequest("guests", {
-      method: "POST",
-      body: guestData
-    });
-    return result && result[0] ? result[0] : null;
+    try {
+      const result = await supabaseRequest("guests", {
+        method: "POST",
+        body: guestData
+      });
+      return result && result[0] ? result[0] : null;
+    } catch (err) {
+      if (err.message && err.message.includes("pax")) {
+        console.warn("Kolom 'pax' belum ada di Supabase. Menyimpan data dasar...");
+        const fallback = { ...guestData };
+        delete fallback.pax;
+        const result = await supabaseRequest("guests", {
+          method: "POST",
+          body: fallback
+        });
+        return result && result[0] ? result[0] : null;
+      }
+      throw err;
+    }
   },
 
   // Update data tamu
@@ -137,11 +151,25 @@ const GuestsAPI = {
       return null;
     }
 
-    const result = await supabaseRequest(`guests?id=eq.${id}`, {
-      method: "PATCH",
-      body: updates
-    });
-    return result && result[0] ? result[0] : null;
+    try {
+      const result = await supabaseRequest(`guests?id=eq.${id}`, {
+        method: "PATCH",
+        body: updates
+      });
+      return result && result[0] ? result[0] : null;
+    } catch (err) {
+      if (err.message && err.message.includes("pax")) {
+        console.warn("Kolom 'pax' belum ada di Supabase. Menyimpan data dasar...");
+        const fallback = { ...updates };
+        delete fallback.pax;
+        const result = await supabaseRequest(`guests?id=eq.${id}`, {
+          method: "PATCH",
+          body: fallback
+        });
+        return result && result[0] ? result[0] : null;
+      }
+      throw err;
+    }
   },
 
   // Hapus tamu

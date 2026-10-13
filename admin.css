@@ -466,6 +466,150 @@ body {
 .stat-icon.yellow { background: rgba(224, 159, 25, 0.18); color: #d68910; }
 .stat-icon.terracotta { background: rgba(143, 49, 21, 0.15); color: var(--accent-terracotta); }
 
+/* Pax Recap Banner */
+.pax-recap-banner {
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(244, 248, 243, 0.95) 100%);
+  border: 1px solid rgba(59, 93, 59, 0.2);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.pax-recap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(59, 93, 59, 0.1);
+}
+
+.pax-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--primary-gradient);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 10px rgba(59, 93, 59, 0.2);
+}
+
+.pax-recap-header h4 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.12rem;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.pax-recap-header span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.pax-total-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(59, 93, 59, 0.1);
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 0.88rem;
+  color: var(--primary);
+}
+
+.pax-total-pill strong {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.pax-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.pax-stat-box {
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pax-stat-box:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.pax-stat-box.green { border-left: 4px solid var(--primary); }
+.pax-stat-box.gold { border-left: 4px solid var(--accent-gold); }
+.pax-stat-box.blue { border-left: 4px solid #2980b9; }
+.pax-stat-box.terracotta { border-left: 4px solid var(--accent-terracotta); }
+
+.pax-stat-title {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pax-stat-number {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.pax-stat-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Chart Toggle Group */
+.chart-toggle-group {
+  display: flex;
+  gap: 6px;
+  background: rgba(59, 93, 59, 0.08);
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.btn-toggle {
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-toggle.active {
+  background: white;
+  color: var(--primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
 /* ============================================================
    DASHBOARD ROW 2: STACKED BAR CHART
    ============================================================ */
@@ -713,6 +857,40 @@ tr:hover td {
 .badge-sender {
   background: rgba(0, 0, 0, 0.05);
   color: #444;
+}
+
+.badge-pax {
+  background: rgba(59, 93, 59, 0.09);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(59, 93, 59, 0.2);
+}
+
+.badge-pax-group {
+  background: rgba(197, 160, 89, 0.2);
+  color: #8c6a23;
+  font-weight: 800;
+  font-size: 0.8rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  box-shadow: 0 2px 6px rgba(197, 160, 89, 0.15);
+}
+
+.sheet-pax-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(197, 160, 89, 0.18);
+  color: #8c6a23;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-left: 10px;
 }
 
 .link-pill {

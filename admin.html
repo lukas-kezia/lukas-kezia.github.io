@@ -171,12 +171,13 @@
 
             <div class="kpi-card glass">
               <div class="kpi-top">
-                <span class="kpi-label">Total Tamu</span>
+                <span class="kpi-label">Total Tamu & Pax</span>
                 <div class="stat-icon blue"><i class="fas fa-users"></i></div>
               </div>
-              <div class="kpi-val" id="stat-total">0</div>
+              <div class="kpi-val" id="stat-total-pax">0 Pax</div>
               <div class="kpi-sub">
-                <span>Seluruh data di Supabase</span>
+                <span class="kpi-badge success" id="stat-total">0</span>
+                <span>kontak undangan</span>
               </div>
             </div>
 
@@ -193,13 +194,62 @@
           </div>
         </div>
 
+        <!-- REKAP PAX KATERING & KURSI RESEPSI -->
+        <div class="pax-recap-banner glass">
+          <div class="pax-recap-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="pax-icon"><i class="fas fa-utensils"></i></div>
+              <div>
+                <h4>Rekap Kuota Pax Katering & Kursi Resepsi</h4>
+                <span>Estimasi jumlah porsi katering fisik dan kursi yang perlu dipersiapkan untuk acara</span>
+              </div>
+            </div>
+            <div class="pax-total-pill">
+              <span>Total Estimasi:</span>
+              <strong id="recap-total-pax">0 Pax</strong>
+            </div>
+          </div>
+
+          <div class="pax-breakdown-grid">
+            <div class="pax-stat-box green">
+              <div class="pax-stat-title"><i class="fas fa-utensils"></i> Pax Resepsi (Katering)</div>
+              <div class="pax-stat-number" id="recap-pax-resepsi">0 Pax</div>
+              <div class="pax-stat-sub">Undangan Digital + Fisik</div>
+            </div>
+            <div class="pax-stat-box gold">
+              <div class="pax-stat-title"><i class="fas fa-certificate"></i> Pax Undangan Fisik</div>
+              <div class="pax-stat-number" id="recap-pax-fisik">0 Pax</div>
+              <div class="pax-stat-sub">Kartu Cetak Resmi</div>
+            </div>
+            <div class="pax-stat-box blue">
+              <div class="pax-stat-title"><i class="fas fa-mobile-alt"></i> Pax Undangan Digital</div>
+              <div class="pax-stat-number" id="recap-pax-digital">0 Pax</div>
+              <div class="pax-stat-sub">Akses Penuh Website</div>
+            </div>
+            <div class="pax-stat-box terracotta">
+              <div class="pax-stat-title"><i class="fas fa-bullhorn"></i> Pax Pengumuman Saja</div>
+              <div class="pax-stat-number" id="recap-pax-pengumuman">0 Pax</div>
+              <div class="pax-stat-sub">Hanya Pemberkatan / Doa</div>
+            </div>
+          </div>
+        </div>
+
         <!-- ROW 2: Stacked Bar Chart (Pihak Pengundang x Jenis Undangan) -->
         <div class="dash-row-2">
           <div class="dash-chart-card glass">
             <div class="dash-card-header">
               <div>
                 <h3><i class="fas fa-chart-bar"></i> Alokasi Tamu per Kategori Pengundang & Jenis Undangan</h3>
-                <span class="dash-sub">Rincian kuota tamu masing-masing pihak (Lukas, Kezia, Orang Tua) berdasarkan Digital, Fisik, dan Pengumuman</span>
+                <span class="dash-sub">Rincian alokasi masing-masing pihak (Lukas, Kezia, Orang Tua)</span>
+              </div>
+              <!-- Toggle View: Undangan vs Pax -->
+              <div class="chart-toggle-group">
+                <button type="button" class="btn-toggle active" id="btn-chart-mode-pax" onclick="setChartMode('pax')">
+                  <i class="fas fa-utensils"></i> Hitung Pax (Orang)
+                </button>
+                <button type="button" class="btn-toggle" id="btn-chart-mode-count" onclick="setChartMode('count')">
+                  <i class="fas fa-users"></i> Hitung Kontak (Undangan)
+                </button>
               </div>
             </div>
             <div class="stacked-bar-container">
@@ -221,8 +271,11 @@
                 <span id="sheet-dirty-badge" class="dirty-badge" style="display: none;">
                   <i class="fas fa-exclamation-circle"></i> <span id="sheet-dirty-count">0</span> perubahan belum disimpan
                 </span>
+                <span class="sheet-pax-badge" id="sheet-pax-badge">
+                  <i class="fas fa-utensils"></i> <span id="sheet-summary-pax">0</span> Pax (<span id="sheet-summary-count">0</span> Kontak)
+                </span>
               </h2>
-              <p>Edit langsung data tamu pada sel tabel seperti Excel / Google Sheets. Tekan <strong>Ctrl + S</strong> untuk menyimpan.</p>
+              <p>Edit langsung data tamu pada sel tabel seperti Excel / Google Sheets. Kolom <strong>Pax</strong> untuk jumlah tamu global (misal teman sekolah). Tekan <strong>Ctrl + S</strong> untuk menyimpan.</p>
             </div>
 
             <div class="spreadsheet-actions">
@@ -288,11 +341,12 @@
               <thead>
                 <tr>
                   <th width="4%" style="text-align: center;">#</th>
-                  <th width="24%">Nama Tamu <span style="color:red;">*</span></th>
-                  <th width="16%">No. WhatsApp</th>
-                  <th width="14%">Kategori Undangan</th>
-                  <th width="18%">Relasi</th>
-                  <th width="14%">Pihak Pengundang</th>
+                  <th width="22%">Nama Tamu <span style="color:red;">*</span></th>
+                  <th width="15%">No. WhatsApp</th>
+                  <th width="7%" style="text-align: center;" title="Estimasi Jumlah Orang / Pax">Pax</th>
+                  <th width="13%">Kategori Undangan</th>
+                  <th width="15%">Relasi</th>
+                  <th width="13%">Pihak Pengundang</th>
                   <th width="10%">Status Kirim</th>
                   <th width="4%" style="text-align: center;">✕</th>
                 </tr>
@@ -403,15 +457,16 @@
                 <thead>
                   <tr>
                     <th width="4%">No</th>
-                    <th width="20%">Nama Tamu</th>
-                    <th width="13%">No. WhatsApp</th>
+                    <th width="18%">Nama Tamu</th>
+                    <th width="12%">No. WhatsApp</th>
+                    <th width="7%" style="text-align: center;" title="Jumlah Orang / Pax">Pax</th>
                     <th width="10%">Kategori</th>
-                    <th width="14%">Relasi</th>
+                    <th width="12%">Relasi</th>
                     <th width="10%">Pihak</th>
-                    <th width="10%">Format Pesan</th>
-                    <th width="9%">Link Undangan</th>
+                    <th width="9%">Format Pesan</th>
+                    <th width="8%">Link Undangan</th>
                     <th width="8%">Status</th>
-                    <th width="12%" style="text-align: center;">Aksi</th>
+                    <th width="11%" style="text-align: center;">Aksi</th>
                   </tr>
                 </thead>
                 <tbody id="guests-table-body">
@@ -448,6 +503,7 @@
                 <label>Sisipkan Variabel Otomatis (Klik untuk menyisipkan):</label>
                 <div class="template-placeholders">
                   <span class="tag-placeholder" onclick="insertPlaceholder('{Nama}')">{Nama}</span>
+                  <span class="tag-placeholder" onclick="insertPlaceholder('{Pax}')">{Pax}</span>
                   <span class="tag-placeholder" onclick="insertPlaceholder('{URL}')">{URL}</span>
                   <span class="tag-placeholder" onclick="insertPlaceholder('{Pihak}')">{Pihak}</span>
                   <span class="tag-placeholder" onclick="insertPlaceholder('{Relasi}')">{Relasi}</span>
@@ -531,10 +587,17 @@
             <small>Nama ini akan muncul pada sampul undangan dan URL parameter.</small>
           </div>
 
-          <div class="form-group">
-            <label for="guest-phone">Nomor WhatsApp</label>
-            <input type="text" id="guest-phone" class="input-box" placeholder="Contoh: 08123456789 atau 628123456789">
-            <small>Otomatis dikonversi ke kode negara 62.</small>
+          <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label for="guest-phone">Nomor WhatsApp</label>
+              <input type="text" id="guest-phone" class="input-box" placeholder="Contoh: 08123456789">
+              <small>Otomatis dikonversi ke kode negara 62.</small>
+            </div>
+            <div class="form-group">
+              <label for="guest-pax">Jumlah Tamu (Pax) <span style="color:red;">*</span></label>
+              <input type="number" id="guest-pax" class="input-box" min="1" value="1" placeholder="1" required>
+              <small>Estimasi orang (misal 10 untuk teman sekolah).</small>
+            </div>
           </div>
 
           <div class="form-group">
