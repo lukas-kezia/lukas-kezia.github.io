@@ -595,6 +595,20 @@
       font-size: 1.3em;
     }
 
+    .private-event-notice {
+      max-width: 340px;
+      margin: 12px auto 0;
+      padding: 10px 16px;
+      background: rgba(59, 93, 59, 0.08);
+      border: 1px dashed rgba(59, 93, 59, 0.35);
+      border-radius: 12px;
+      color: #3b5d3b;
+      font-size: 0.82em;
+      line-height: 1.55;
+      text-align: center;
+      font-style: italic;
+    }
+
     /* Countdown */
     .countdown-container {
       display: flex;
@@ -1459,9 +1473,7 @@
           <h2>Syukur kepada Tuhan</h2>
           <p
             style="text-align: center; font-size: 1.15em; color: #555; line-height: 1.8; max-width: 700px; margin: 0 auto;">
-            Dengan penuh sukacita, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberi doa restu di hari
-            pernikahan
-            kami.
+            Dengan penuh rasa syukur dan sukacita, kami membagikan kabar bahagia ini serta memohon doa restu dari <span id="welcome-guest-name" style="font-weight: 600; color: #2e472e;">Bapak/Ibu/Saudara/i</span> di hari pernikahan kami.
           </p>
         </section>
 
@@ -1516,6 +1528,9 @@
             <div class="event-info" style="flex-direction: column; gap: 5px;">
               <div>📅 Sabtu, 20 November 2027</div>
               <div>📍 Gereja GPdI COTW Temanggung</div>
+            </div>
+            <div class="private-event-notice">
+              Tanpa mengurangi rasa hormat, prosesi pemberkatan nikah diperuntukkan khusus bagi keluarga inti.<span class="for-undangan-only"> Kehadiran Anda sangat kami nantikan pada acara Resepsi.</span>
             </div>
           </div>
         </section>
@@ -1706,9 +1721,7 @@
           <h2>Terima Kasih</h2>
           <div style="text-align:center">
             <p style="color:#555; line-height:1.9; font-size:0.97em;">
-              Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan
-              memberikan
-              doa restu di hari pernikahan kami.
+              Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila <span id="closing-guest-name" style="font-weight:600; color:#2e472e;">Bapak/Ibu/Saudara/i</span> berkenan memberikan doa restu bagi pernikahan kami.
             </p>
             <p style="margin-top: 18px; color:#3b5d3b; font-style:italic; font-size:0.95em; line-height:1.7;">
               Atas segala doa dan restunya,<br>kami ucapkan terima kasih yang sebesar-besarnya.
@@ -1894,6 +1907,12 @@
         const popupNamaEl = document.getElementById("popup-nama");
         if (popupNamaEl) popupNamaEl.textContent = guest.name;
 
+        const closingGuestNameEl = document.getElementById("closing-guest-name");
+        if (closingGuestNameEl) closingGuestNameEl.textContent = guest.name;
+
+        const welcomeGuestNameEl = document.getElementById("welcome-guest-name");
+        if (welcomeGuestNameEl) welcomeGuestNameEl.textContent = guest.name;
+
         // Terapkan visibility untuk pengumuman / undangan
         applyGuestTypeRestrictions(guest.type);
 
@@ -1903,6 +1922,12 @@
         nama = queryName;
         const popupNamaEl = document.getElementById("popup-nama");
         if (popupNamaEl) popupNamaEl.textContent = queryName;
+
+        const closingGuestNameEl = document.getElementById("closing-guest-name");
+        if (closingGuestNameEl) closingGuestNameEl.textContent = queryName;
+
+        const welcomeGuestNameEl = document.getElementById("welcome-guest-name");
+        if (welcomeGuestNameEl) welcomeGuestNameEl.textContent = queryName;
       }
     }
 
@@ -1920,6 +1945,12 @@
       const wishNameInput = document.getElementById("wish-name");
 
       if (hasGuestName) {
+        const closingGuestNameEl = document.getElementById("closing-guest-name");
+        if (closingGuestNameEl) closingGuestNameEl.textContent = rawNama;
+
+        const welcomeGuestNameEl = document.getElementById("welcome-guest-name");
+        if (welcomeGuestNameEl) welcomeGuestNameEl.textContent = rawNama;
+
         if (wishNameInput) {
           wishNameInput.value = rawNama;
           wishNameInput.readOnly = true;
